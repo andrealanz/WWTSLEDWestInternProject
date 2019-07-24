@@ -1,0 +1,47 @@
+---
+title: "formatDF"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(openxlsx)
+library(plotly)
+```
+
+Read in Excel:
+```{r}
+data <- read.xlsx(here("data", "Backlog Order Summary.xlsx"), colNames = TRUE)
+```
+
+First row as column names:
+```{r}
+colnames(data) <- as.character(unlist(data[1,]))
+data <- data[-1, ]
+```
+
+Remove all commercial events (doesn't work):
+```{r}
+#data <- data[grepl("Gov", data$`Sales Channel`),]
+```
+
+Pie chart by P&L:
+```{r}
+PLchart1 <- data.frame("Category" = unique(data$`P L`),GP = aggregate(as.numeric(data$`Sum(Func Ext GP)`), by = list(data$`P L`), FUN = sum)[,2])
+```
+
+```{r}
+p1 <- plot_ly(PLchart1, labels = ~Category, values = ~GP, type = 'pie')
+p1
+```
+
+Pie chart by AM:
+```{r}
+PLchart2 <- data.frame("Category" = unique(data$`External Sales Rep`),GP = aggregate(as.numeric(data$`Sum(Func Ext GP)`), by = list(data$`External Sales Rep`), FUN = sum)[,2])
+```
+
+```{r}
+p2 <- plot_ly(PLchart2, labels = ~Category, values = ~GP, type = 'pie')
+p2
+```
