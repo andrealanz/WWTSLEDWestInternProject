@@ -5,23 +5,40 @@ library(plotly)
 # the 'mpg' dataset.
 library(ggplot2)
 
-fluidPage(
-  dashboardPage(
-    dashboardHeader(title ="BackLog Summary"),
-    dashboardSidebar(),
-    dashboardBody(
-      # Create a new Row in the UI for selectInputs
+
+sidebar <- dashboardSidebar(
+      sidebarMenu(
+        menuItem("Profit & Loss", tabName = "profit_loss"),
+        menuItem("Account Managers", tabName = "acc_man")
+      )
+)
+    
+body <- dashboardBody(
+  tabItems(
+    tabItem(tabName = "profit_loss",
         fluidRow(
           box(
-              plotlyOutput("chart1"),
-              verbatimTextOutput("event"), width = NULL, title = "%GP by P&L"
+            plotlyOutput("chart1"),
+            width = NULL, title = "%GP by P&L"
           )
         ),
         fluidRow(
           box(
-              selectInput("P&L", "P&L", c("All", unique(as.character((data$`P&L`)))))       
+              selectInput("P&L", "P&L", c("All", unique(as.character((data$`P&L`)))), selected = "All")       
+          ),
+          box(
+              uiOutput("secondSelection")       
+          ),
+          box(
+              uiOutput("thirdSelection")
           )
         )
     )
   )
+)
+
+dashboardPage(skin = "black",
+  dashboardHeader(title ="BackLog Summary"),
+  sidebar,
+  body
 )
