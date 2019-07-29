@@ -24,13 +24,22 @@ body <- dashboardBody(
         ),
         fluidRow(
           box(
-              selectInput("P&L", "P&L", c("All", unique(as.character((data$`P&L`)))), selected = "All")       
+              selectInput("P&L1", "P&L", c("All", unique(as.character((data$`P&L`)))), selected = "All")       
           ),
           box(
-              uiOutput("secondSelection")       
+            uiOutput("secondSelection")       
           ),
           box(
-              uiOutput("thirdSelection")
+            uiOutput("thirdSelection")
+          )
+        )
+    ),
+    tabItem(tabName = "acc_man",
+        fluidRow(
+          box(
+            h2("new tab"),
+            #plotlyOutput("chart2"),
+            width = NULL, title = "%GP by AM"
           )
         )
     )
