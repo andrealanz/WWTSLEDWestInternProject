@@ -48,6 +48,32 @@ def reformat_header(filename):
             count += 1
         print(csv_reader.fieldnames)
 
+# def csv_avt(filename):
+    # with open(filename) as csv_file:
+        # csv_reader = csv.DictReader(csv_file)
+        # count = 0
+        # for fieldname in csv_reader.fieldnames:
+            # fieldname = fieldname.lower()
+            # fieldname = fieldname.translate(str.maketrans('','',".,"))
+            # fieldname = fieldname.replace(" ","")
+            # csv_reader.fieldnames[count] = fieldname
+            # print(csv_reader.fieldnames[count])
+            # count += 1
+        # part_name = part_finder(csv_reader)
+        # descrition_name = description_finder(csv_reader)
+        # listprice_name = listprice_finder(csv_reader)
+        # wwtcost_name = wwtprice_finder(csv_reader)
+        # quantity_name = quantity_finder(csv_reader)
+        # manufacturer_name = manufacturer_finder(csv_reader)
+        # vendorquote_name = vendorquote_finder(csv_reader)
+        # with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
+            # headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Qty','Manufacturer','Vendor','Additional Description','Vendor Quote #']
+            # csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
+            # csv_writer.writeheader()
+            # for row in csv_reader:
+                # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
+                # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
+
 def csv_avt(filename):
     with open(filename) as csv_file:
         csv_reader = csv.DictReader(csv_file)
@@ -57,10 +83,10 @@ def csv_avt(filename):
             fieldname = fieldname.translate(str.maketrans('','',".,"))
             fieldname = fieldname.replace(" ","")
             csv_reader.fieldnames[count] = fieldname
-            # print(csv_reader.fieldnames[count])
+            print(csv_reader.fieldnames[count])
             count += 1
         part_name = part_finder(csv_reader)
-        descrition_name = description_finder(csv_reader)
+        description_name = description_finder(csv_reader)
         listprice_name = listprice_finder(csv_reader)
         wwtcost_name = wwtprice_finder(csv_reader)
         quantity_name = quantity_finder(csv_reader)
@@ -70,29 +96,84 @@ def csv_avt(filename):
             headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Qty','Manufacturer','Vendor','Additional Description','Vendor Quote #']
             csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
             csv_writer.writeheader()
+ 
+            
             for row in csv_reader:
-                (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
-                'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
+                output_dictionary = {}
+                if part_name is not None:
+                    output_dictionary.update({'Part #':row[part_name]})
+                else:
+                    output_dictionary.update({'Part #':None})
+                if description_name is not None:
+                    output_dictionary.update({'Description':row[description_name]})
+                else:
+                    output_dictionary.update({'Description':None})
+                if listprice_name is not None:
+                    output_dictionary.update({'List Price':row[listprice_name]})
+                else:
+                    output_dictionary.update({'List Price':None})
+                if wwtcost_name is not None:
+                    output_dictionary.update({'WWT Cost':row[wwtcost_name]})
+                else:
+                    output_dictionary.update({'WWT Cost':None})
+                if quantity_name is not None:
+                    output_dictionary.update({'Qty':row[quantity_name]})
+                else:
+                    output_dictionary.update({'Description':None})                   
+                if manufacturer_name is not None:
+                    output_dictionary.update({'Manufacturer':row[manufacturer_name]})
+                else:
+                    output_dictionary.update({'Maufacturer':None})
+                if vendorquote_name is not None:
+                    output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
+                else:
+                    output_dictionary.update({'Vendor Quote #':None})
+                output_dictionary.update({'Additional Description':None, 'Vendor':None})
+                csv_writer.writerow(output_dictionary)
+                # (csv_writer.writerow({'Part #':row[part_name],'Description':row[description_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
+                # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
+            
+            
+# def part_finder(csv_dict):
+    # if 'partnumber' in csv_dict.fieldnames:
+        # return 'partnumber'
+    # elif 'itemnumber' in csv_dict.fieldnames:
+        # return 'itemnumber'
+    # elif 'item' in csv_dict.fieldnames:
+        # return 'item'
+    # elif 'mfrpart#' in csv_dict.fieldnames:
+        # return 'mfrpart#'
+    # elif 'part#' in csv_dict.fieldnames:
+        # return 'part#'
+    # elif 'itemno' in csv_dict.fieldnames:
+        # return 'itemno'
+    # elif 'partno' in csv_dict.fieldnames:
+        # return 'partno'
+    # else:
+        # print('Part # fieldname not found.')
+        # return None
+
             
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
-        return 'partnumber'
+        part_name = 'partnumber'
     elif 'itemnumber' in csv_dict.fieldnames:
-        return 'itemnumber'
+        part_name = 'itemnumber'
     elif 'item' in csv_dict.fieldnames:
-        return 'item'
+        part_name =  'item'
     elif 'mfrpart#' in csv_dict.fieldnames:
-        return 'mfrpart#'
+        part_name = 'mfrpart#'
     elif 'part#' in csv_dict.fieldnames:
-        return 'part#'
+        part_name = 'part#'
     elif 'itemno' in csv_dict.fieldnames:
-        return 'itemno'
+        part_name = 'itemno'
     elif 'partno' in csv_dict.fieldnames:
-        return 'partno'
+        part_name = 'partno'
     else:
         print('Part # fieldname not found.')
         return None
-
+    return part_name
+    
 def description_finder(csv_dict):
     if 'product' in csv_dict.fieldnames:
         return 'product'
@@ -107,10 +188,12 @@ def description_finder(csv_dict):
 def listprice_finder(csv_dict):
     if 'listprice' in csv_dict.fieldnames:
         return 'listprice'
-    elif 'totallist priceusd' in csv_dict.fieldnames:
+    elif 'totallistpriceusd' in csv_dict.fieldnames:
         return 'total list price (usd)'
-    elif 'price' in csv_dict.fieldnames:
-        return 'price'
+    elif 'unitlistprice' in csv_dict.fieldnames:
+        return 'unitlistprice'
+    elif 'msrp' in csv_dict.fieldnames:
+        return 'msrp'
     else:
         print('Price fieldname not found.')
         return None
@@ -118,10 +201,16 @@ def listprice_finder(csv_dict):
 def wwtprice_finder(csv_dict):
     if 'resellernetprice' in csv_dict.fieldnames:
         return 'resellernetprice'
-    elif 'extendedprice' in csv_dict.fieldnames:
-        return 'extendedprice'
-    elif 'extprice' in csv_dict.fieldnames:
-        return 'extprice'
+    elif 'resellerprice' in csv_dict.fieldnames:
+        return 'resellerprice'
+    elif 'quoteprice' in csv_dict.fieldnames:
+        return 'quoteprice'
+    elif 'unitprice' in csv_dict.fieldnames:
+        return 'unitprice'
+    elif 'unitnetprice' in csv_dict.fieldnames:
+        return 'unitnetprice'
+    elif 'price' in csv_dict.fieldnames:
+        return 'price'
     else:
         print('WWT Cost fieldname not found.')
         return None
@@ -133,6 +222,8 @@ def quantity_finder(csv_dict):
         return 'quantity'
     elif 'qtyquoted' in csv_dict.fieldnames:
         return 'qty quoted'
+    elif 'extqty' in csv_dict.fieldnames:
+        return 'extqty'
     else:
         print('Quantity fieldname not found.')
         return None
@@ -150,15 +241,21 @@ def manufacturer_finder(csv_dict):
 def vendorquote_finder(csv_dict):
     if 'quotename' in csv_dict.fieldnames:
         return 'quotename'
+    elif 'supplierquote#' in csv_dict.fieldnames:
+        return 'supplierquote#'
     elif 'quote#' in csv_dict.fieldnames:
         return 'quote#'
-    elif 'quote' in csv_file.fieldnames:
+    elif 'quote' in csv_dict.fieldnames:
         return 'quote'
-    elif 'rfqnumber' in csv_dict.fieldnames:
-        return 'rfqnumber'
+    elif 'quoteno' in csv_dict.fieldnames:
+        return 'quoteno'
+    elif 'pricequotation' in csv_dict.fieldnames:
+        return 'pricequotation'
+    elif 'quotenumber' in csv_dict.fieldnames:
+        return 'quotenumber'
     else:
         print('Vendor Quote # fieldname not found.')
         return None
     
 # reformat_header('5807.csv')
-csv_avt('5807.csv')
+csv_avt('QUO-test.csv')
