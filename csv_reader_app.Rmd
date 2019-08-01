@@ -9,13 +9,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(reticulate) #need to have Python and Conda installed (easiest way is by installing Anaconda, then adding it to your path)
 library(shiny)
 library(readxl)
-library(here)
 ```
 
 ```{r include=FALSE}
 source_python("csv_reader.py")
 vendors <- read_excel("ActiveVendors.xls")
-vendors <- sort(vendors$NAME)
+vendors <- sort(vendors$NAME)   #alphabetize vendors
+manufacturers <- read_excel("ActiveMFGs.xls")
+manufacturers <- sort(manufacturers$NAME)
 ```
 
 
@@ -26,25 +27,31 @@ inputPanel(
                 accept = c("text/csv",
                          "text/comma-separated-values,text/plain",
                          ".csv")),
-  selectizeInput("vendorList", "Vendor", vendors, selected = NULL, multiple = FALSE, options = list(
+  selectizeInput("vendorChoice", "Vendor", vendors, selected = NULL, multiple = FALSE, options = list(
           placeholder = 'Select a vendor',
           onInitialize = I('function() { this.setValue(""); }'))
   )
-  
 )
 
 observe({
-    if(!is.null(input$file1) && input$vendorList != ""){
+    if(!is.null(input$file1) && input$vendorChoice != ""){
       inFile <- input$file1
-      csv_avt(inFile$name, input$vendorList)
+      csv_avt(inFile$name, input$vendorChoice)
     }
 })
 
 renderText({
-  if(!is.null(input$file1) && input$vendorList != ""){
+  if(!is.null(input$file1) && input$vendorChoice != ""){
     "Template Created"
   }
 })
 
+renderDataTable(
+   if(file.exists(paste('wwt_',(input$file1)$name, sep = "")) && !is.null(input$file1) && input$vendorChoice != ""){
+      data <- read.csv(paste('wwt_',(input$file1)$name, sep = ""))
+      data
+   }
+)
 ```
+
 
