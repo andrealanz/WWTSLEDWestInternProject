@@ -74,7 +74,7 @@ def reformat_header(filename):
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
-def csv_avt(filename):
+def csv_avt(filename, vendorname):
     with open(filename) as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
@@ -123,12 +123,12 @@ def csv_avt(filename):
                 if manufacturer_name is not None:
                     output_dictionary.update({'Manufacturer':row[manufacturer_name]})
                 else:
-                    output_dictionary.update({'Maufacturer':None})
+                    output_dictionary.update({'Manufacturer':None})
                 if vendorquote_name is not None:
                     output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
                 else:
                     output_dictionary.update({'Vendor Quote #':None})
-                output_dictionary.update({'Additional Description':None, 'Vendor':None})
+                output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
                 csv_writer.writerow(output_dictionary)
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[description_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
@@ -258,4 +258,4 @@ def vendorquote_finder(csv_dict):
         return None
     
 # reformat_header('5807.csv')
-csv_avt('QUO-test.csv')
+#csv_avt('QUO-test.csv')
