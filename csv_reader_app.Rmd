@@ -46,8 +46,12 @@ renderText({
   }
 })
 
+inputPanel(
+  actionButton("viewCSV", "View CSV")
+)
+
 renderDataTable(
-   if(file.exists(paste('wwt_',(input$file1)$name, sep = "")) && !is.null(input$file1) && input$vendorChoice != ""){
+   if(file.exists(paste('wwt_',(input$file1)$name, sep = "")) && !is.null(input$file1) && input$vendorChoice != "" && input$viewCSV > 0){
       data <- read.csv(paste('wwt_',(input$file1)$name, sep = ""))
       data
    }
