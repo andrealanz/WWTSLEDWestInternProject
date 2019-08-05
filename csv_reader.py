@@ -21,7 +21,7 @@ import string
         # wwtcost_name = wwtprice_finder(csv_reader)
         # quantity_name = quantity_finder(csv_reader)
         # manufacturer_name = manufacturer_finder(csv_reader)
- 
+
         # with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
             # headers = ['Part #', 'Description', 'List Price', 'WWT Cost', 'Customer Price', 'Qty']
             # csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
@@ -36,9 +36,9 @@ def reformat_header(filename):
         csv_reader = csv.DictReader(csv_file)
         # print(csv_reader.fieldnames)
         count = 0
-        
+
         #iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
-        
+
         for fieldname in csv_reader.fieldnames:
             fieldname = fieldname.lower()
             fieldname = fieldname.translate(str.maketrans('','',".,"))
@@ -74,16 +74,23 @@ def reformat_header(filename):
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
-def csv_avt(filename, filepath, vendorname):
-    with open(filepath) as csv_file:
+def csv_avt(filename, vendorname):
+    items = 0
+    with open(filename, encoding='utf-8-sig') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for row in csv_reader:
+            if row['Description']:
+                items += 1
+    with open(filename, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
         for fieldname in csv_reader.fieldnames:
             fieldname = fieldname.lower()
             fieldname = fieldname.translate(str.maketrans('','',".,"))
+            fieldname = fieldname.replace("\n","")
             fieldname = fieldname.replace(" ","")
             csv_reader.fieldnames[count] = fieldname
-            print(csv_reader.fieldnames[count])
+            # print(csv_reader.fieldnames[count])
             count += 1
         part_name = part_finder(csv_reader)
         description_name = description_finder(csv_reader)
@@ -96,9 +103,9 @@ def csv_avt(filename, filepath, vendorname):
             headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Qty','Manufacturer','Vendor','Additional Description','Vendor Quote #']
             csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
             csv_writer.writeheader()
- 
-            
-            for row in csv_reader:
+
+
+            for i, row in enumerate(csv_reader):
                 output_dictionary = {}
                 if part_name is not None:
                     output_dictionary.update({'Part #':row[part_name]})
@@ -119,7 +126,7 @@ def csv_avt(filename, filepath, vendorname):
                 if quantity_name is not None:
                     output_dictionary.update({'Qty':row[quantity_name]})
                 else:
-                    output_dictionary.update({'Description':None})                   
+                    output_dictionary.update({'Description':None})
                 if manufacturer_name is not None:
                     output_dictionary.update({'Manufacturer':row[manufacturer_name]})
                 else:
@@ -130,10 +137,12 @@ def csv_avt(filename, filepath, vendorname):
                     output_dictionary.update({'Vendor Quote #':None})
                 output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
                 csv_writer.writerow(output_dictionary)
+                if i >= (items - 1):
+                    break
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[description_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
-            
-            
+
+
 # def part_finder(csv_dict):
     # if 'partnumber' in csv_dict.fieldnames:
         # return 'partnumber'
@@ -153,7 +162,7 @@ def csv_avt(filename, filepath, vendorname):
         # print('Part # fieldname not found.')
         # return None
 
-            
+
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
         part_name = 'partnumber'
@@ -173,7 +182,7 @@ def part_finder(csv_dict):
         print('Part # fieldname not found.')
         return None
     return part_name
-    
+
 def description_finder(csv_dict):
     if 'product' in csv_dict.fieldnames:
         return 'product'
@@ -227,7 +236,7 @@ def quantity_finder(csv_dict):
     else:
         print('Quantity fieldname not found.')
         return None
-    
+
 
 def manufacturer_finder(csv_dict):
     if 'manufacturer' in csv_dict.fieldnames:
@@ -256,6 +265,6 @@ def vendorquote_finder(csv_dict):
     else:
         print('Vendor Quote # fieldname not found.')
         return None
-    
+
 # reformat_header('5807.csv')
 #csv_avt('QUO-test.csv')
