@@ -36,7 +36,7 @@ inputPanel(
 observe({
     if(!is.null(input$file1) && input$vendorChoice != ""){
       inFile <- input$file1
-      csv_avt(inFile$name, input$vendorChoice)
+      csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
     }
 })
 

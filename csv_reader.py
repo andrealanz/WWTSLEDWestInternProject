@@ -74,8 +74,8 @@ def reformat_header(filename):
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
-def csv_avt(filename, vendorname):
-    with open(filename) as csv_file:
+def csv_avt(filename, filepath, vendorname):
+    with open(filepath) as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
         for fieldname in csv_reader.fieldnames:
