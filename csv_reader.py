@@ -74,14 +74,14 @@ def reformat_header(filename):
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
-def csv_avt(filename, vendorname):
+def csv_avt(filename,filepath,vendorname):
     items = 0
-    with open(filename, encoding='utf-8-sig') as csv_file:
+    with open(filepath, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
             if row['Description']:
                 items += 1
-    with open(filename, encoding='utf-8-sig') as csv_file:
+    with open(filepath, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
         for fieldname in csv_reader.fieldnames:
