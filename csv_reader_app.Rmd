@@ -37,7 +37,7 @@ observe({
     if(!is.null(input$file1) && input$vendorChoice != ""){
       inFile <- input$file1
       csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
-      mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""))
+      mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
       file.remove(paste('wwt_',(input$file1)$name, sep = ""))
     }
 })
@@ -69,7 +69,7 @@ output$download <- downloadHandler(
   content = function(con) {
     if(!is.null(input$file1) 
        && input$vendorChoice != ""){
-          write.csv(mydata, con, na = "")
+          write.csv(mydata, con, na = "", row.names = FALSE)
     }
   }
 )
