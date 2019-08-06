@@ -6,7 +6,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(reticulate) #need to have Python and Conda installed (easiest way is by installing Anaconda, then adding it to your path)
+library(reticulate) #need to have Python and Conda installed (easiest way is by installing Anaconda, then adding it to your system path)
 library(shiny)
 library(readxl)
 ```
@@ -15,8 +15,8 @@ library(readxl)
 source_python("csv_reader.py")
 vendors <- read_excel("ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
-manufacturers <- read_excel("ActiveMFGs.xls")
-manufacturers <- sort(manufacturers$NAME)
+#manufacturers <- read_excel("ActiveMFGs.xls")
+#manufacturers <- sort(manufacturers$NAME)
 ```
 
 
@@ -37,6 +37,8 @@ observe({
     if(!is.null(input$file1) && input$vendorChoice != ""){
       inFile <- input$file1
       csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
+      mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""))
+      file.remove(paste('wwt_',(input$file1)$name, sep = ""))
     }
 })
 
@@ -46,16 +48,43 @@ renderText({
   }
 })
 
+output$download_button <- renderUI({
+  if(!is.null(input$file1) && input$vendorChoice != ""){
+    downloadButton("download", "Download")
+  }
+})
+
+output$viewCSV <- renderUI({
+  if(!is.null(input$file1) && input$vendorChoice != ""){
+    actionButton("viewCSV", "View CSV")
+  }
+})
+
+output$download <- downloadHandler(
+  filename = function() {
+    if(!is.null(input$file1)){
+      paste('wwt_', (input$file1)$name, sep = "")
+    }
+  },
+  content = function(con) {
+    if(!is.null(input$file1) 
+       && input$vendorChoice != ""){
+          write.csv(mydata, con, na = "")
+    }
+  }
+)
+
 inputPanel(
-  actionButton("viewCSV", "View CSV")
+  uiOutput("viewCSV"),
+  uiOutput("download_button")
 )
 
 renderDataTable(
-   if(file.exists(paste('wwt_',(input$file1)$name, sep = "")) && !is.null(input$file1) && input$vendorChoice != "" && input$viewCSV > 0){
-      data <- read.csv(paste('wwt_',(input$file1)$name, sep = ""))
-      data
+  if(!is.null(input$viewCSV)){
+   if(input$viewCSV > 0){
+      mydata
    }
+  }
 )
+
 ```
-
-
