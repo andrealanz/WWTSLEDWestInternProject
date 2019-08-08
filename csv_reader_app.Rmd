@@ -6,9 +6,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 library(reticulate) #need to have Python and Conda installed (easiest way is by installing Anaconda, then adding it to your system path)
 library(shiny)
 library(readxl)
+library(tools)
 ```
 
 ```{r include=FALSE}
@@ -19,14 +21,11 @@ vendors <- sort(vendors$NAME)   #alphabetize vendors
 #manufacturers <- sort(manufacturers$NAME)
 ```
 
-
 ```{r eruptions, echo=FALSE}
 inputPanel(
   fileInput("file1", "Choose CSV File",
                 multiple = FALSE,
-                accept = c("text/csv",
-                         "text/comma-separated-values,text/plain",
-                         ".csv")),
+                accept = c(".csv")),
   selectizeInput("vendorChoice", "Vendor", vendors, selected = NULL, multiple = FALSE, options = list(
           placeholder = 'Select a vendor',
           onInitialize = I('function() { this.setValue(""); }'))
@@ -34,29 +33,51 @@ inputPanel(
 )
 
 observe({
-    if(!is.null(input$file1) && input$vendorChoice != ""){
+  if(!is.null(input$file1)){
+    if(input$vendorChoice != "" 
+       && file_ext((input$file1)$datapath) == "csv"){
       inFile <- input$file1
-      csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
+      error <<- try(
+        csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
+      )
       mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
       file.remove(paste('wwt_',(input$file1)$name, sep = ""))
     }
+  }
 })
 
 renderText({
-  if(!is.null(input$file1) && input$vendorChoice != ""){
-    "Template Created"
+  if(!is.null(input$file1)){
+    if(file_ext((input$file1)$datapath) != "csv"){
+      "Error: Incorrect file extension"
+    }
+    else if(input$vendorChoice != ""){
+        if(file_ext((input$file1)$datapath) == "csv"
+       && is.null(error)){
+          "Template Created"
+        }
+        else{
+          "Invalid Data"
+        }
+    }
   }
 })
 
 output$download_button <- renderUI({
-  if(!is.null(input$file1) && input$vendorChoice != ""){
-    downloadButton("download", "Download")
+  if(!is.null(input$file1)) {
+    if(input$vendorChoice != ""
+       && file_ext((input$file1)$datapath) == "csv"){
+      downloadButton("download", "Download")
+    }
   }
 })
 
 output$viewCSV <- renderUI({
-  if(!is.null(input$file1) && input$vendorChoice != ""){
-    actionButton("viewCSV", "View CSV")
+  if(!is.null(input$file1)){
+    if(input$vendorChoice != ""
+      && file_ext((input$file1)$datapath) == "csv"){
+      actionButton("viewCSV", "View CSV")
+    }
   }
 })
 
@@ -81,7 +102,8 @@ inputPanel(
 
 renderDataTable(
   if(!is.null(input$viewCSV)){
-   if(input$viewCSV > 0){
+   if(input$viewCSV > 0 && input$vendorChoice != ""
+      && file_ext((input$file1)$datapath) == "csv"){
       mydata
    }
   }
