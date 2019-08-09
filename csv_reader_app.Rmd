@@ -15,7 +15,10 @@ library(tools)
 ```
 
 ```{r include=FALSE}
+#run backend python code
 source_python("csv_reader.py")
+
+#read in list of vendors and manufacturers
 vendors <- read_excel("ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
 #manufacturers <- read_excel("ActiveMFGs.xls")
@@ -23,35 +26,48 @@ vendors <- sort(vendors$NAME)   #alphabetize vendors
 ```
 
 ```{r eruptions, echo=FALSE}
+#create 1st input UI pane
 inputPanel(
+  #file upload interface
   fileInput("file1", "Choose CSV File",
-                multiple = FALSE,
-                accept = c(".csv")),
-  selectizeInput("vendorChoice", "Vendor", vendors, selected = NULL, multiple = FALSE, options = list(
-          placeholder = 'Select a vendor',
-          onInitialize = I('function() { this.setValue(""); }'))
+              multiple = FALSE,
+              accept = c(".csv")),
+  #vendor search interface
+  selectizeInput("vendorChoice", "Vendor", vendors, selected = NULL, multiple = FALSE, 
+                  options = list(
+                  #create placeholder
+                    placeholder = 'Select a vendor',
+                    onInitialize = I('function() { this.setValue(""); }'))
   )
 )
 
+#observe changes in user input
 observe({
-  if(!is.null(input$file1)){
-    if(input$vendorChoice != "" 
-       && file_ext((input$file1)$datapath) == "csv"){
+  #run csv reader if .csv file uploaded, vendor selected
+  if(!is.null(input$file1)){  
+    if(input$vendorChoice != "" && file_ext((input$file1)$datapath) == "csv"){
       inFile <- input$file1
+      #error handle python function
       error <<- try(
+        #generate .csv template
         csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
       )
+      #save .csv generated
       mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
+      #remove temporary file
       file.remove(paste('wwt_',(input$file1)$name, sep = ""))
     }
   }
 })
 
+#text output
 renderText({
   if(!is.null(input$file1)){
+    #handle incorrect file extension
     if(file_ext((input$file1)$datapath) != "csv"){
       "Error: Incorrect file extension"
     }
+    #check if a file was generated
     else if(input$vendorChoice != ""){
         if(file_ext((input$file1)$datapath) == "csv"
        && is.null(error)){
@@ -64,7 +80,9 @@ renderText({
   }
 })
 
+#render download button
 output$download_button <- renderUI({
+  #button rendered if conditions hold
   if(!is.null(input$file1)) {
     if(input$vendorChoice != ""
        && file_ext((input$file1)$datapath) == "csv"){
@@ -75,7 +93,9 @@ output$download_button <- renderUI({
   }
 })
 
+#render "view csv" button
 output$viewCSV <- renderUI({
+  #button rendered if conditions hold
   if(!is.null(input$file1)){
     if(input$vendorChoice != ""
       && file_ext((input$file1)$datapath) == "csv"){
@@ -86,13 +106,16 @@ output$viewCSV <- renderUI({
   }
 })
 
+#handle download button input
 output$download <- downloadHandler(
   filename = function() {
+    #default file name
     if(!is.null(input$file1)){
       paste('wwt_', (input$file1)$name, sep = "")
     }
   },
   content = function(con) {
+    #write downloaded file
     if(!is.null(input$file1) 
        && input$vendorChoice != ""){
           write.csv(mydata, con, na = "", row.names = FALSE)
@@ -100,12 +123,15 @@ output$download <- downloadHandler(
   }
 )
 
+#create 2nd UI input pane
 inputPanel(
   uiOutput("viewCSV"),
   uiOutput("download_button")
 )
 
+#create data table output
 renderDataTable(
+  #render datatable if conditions hold
   if(!is.null(input$viewCSV)){
    if(input$viewCSV > 0 && input$vendorChoice != ""
       && file_ext((input$file1)$datapath) == "csv"){
