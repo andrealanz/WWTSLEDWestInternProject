@@ -1,12 +1,13 @@
 ---
 title: "CSV Reader"
+resource_files:
+- .rsconnect_profile
 runtime: shiny
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(reticulate) #need to have Python and Conda installed (easiest way is by installing Anaconda, then adding it to your system path)
 library(shiny)
 library(readxl)
@@ -67,7 +68,9 @@ output$download_button <- renderUI({
   if(!is.null(input$file1)) {
     if(input$vendorChoice != ""
        && file_ext((input$file1)$datapath) == "csv"){
-      downloadButton("download", "Download")
+      if(is.null(error)){
+        downloadButton("download", "Download")
+      }
     }
   }
 })
@@ -76,7 +79,9 @@ output$viewCSV <- renderUI({
   if(!is.null(input$file1)){
     if(input$vendorChoice != ""
       && file_ext((input$file1)$datapath) == "csv"){
-      actionButton("viewCSV", "View CSV")
+        if(is.null(error)){
+          actionButton("viewCSV", "View CSV")
+        }
     }
   }
 })
