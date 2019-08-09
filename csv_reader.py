@@ -97,7 +97,7 @@ def csv_avt(filename,filepath,vendorname):
         vendorquote_name = vendorquote_finder(csv_reader)
 
         with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
-            headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #' 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
+            headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
             csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
             csv_writer.writeheader()
 
@@ -273,4 +273,4 @@ def vendorquote_finder(csv_dict):
 
 # reformat_header('5807.csv')
 # csv_avt('QUO-test.csv', 'QUO-test.csv', "test")
-# csv_avt('5807.csv', "b")
+# csv_avt('5807.csv', '5807.csv',"b")
