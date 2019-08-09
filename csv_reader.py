@@ -108,7 +108,9 @@ def csv_avt(filename,filepath,vendorname):
                 if row[description_name]:
                     items += 1
                 # print(items)
-                if i >= (items):
+                # if i >= (items):
+                    # break
+                if row[part_name] is None and row[description_name] is None and row[quantity_name] is None:
                     break
 
                 output_dictionary = {}
