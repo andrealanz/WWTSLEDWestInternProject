@@ -1,36 +1,8 @@
 import csv
 import string
 
-# with open('5807.csv') as csv_file:
-    # csv_reader = csv.DictReader(csv_file)
-    # with open('5807_wwt.csv',mode='w',newline='') as wwt_file:
-        # headers = ['Part #', 'Description', 'List Price', 'WWT Cost', 'Customer Price', 'Qty']
-        # csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
-        # csv_writer.writeheader()
-        # for row in csv_reader:
-            # count += 1
-            # # print('Row ' + str(count))
-            # csv_writer.writerow({'Part #':row['Part Number'],'Description':row['Part Number'], 'List Price': row['List Price'], 'WWT Cost':row['Reseller Net Price'], 'Customer Price':row['Reseller Net Price'], 'Qty':row['Qty']})
-            # # print(row['Part Number'])
-# def csv_avt(filename):
-    # with open(filename) as csv_file:
-        # csv_reader = csv.DictReader(csv_file)
-        # part_name = part_finder(csv_reader)
-        # descrition_name = description_finder(csv_reader)
-        # listprice_name = listprice_finder(csv_reader)
-        # wwtcost_name = wwtprice_finder(csv_reader)
-        # quantity_name = quantity_finder(csv_reader)
-        # manufacturer_name = manufacturer_finder(csv_reader)
 
-        # with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
-            # headers = ['Part #', 'Description', 'List Price', 'WWT Cost', 'Customer Price', 'Qty']
-            # csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
-            # csv_writer.writeheader()
-            # for row in csv_reader:
-                # (csv_writer.writerow({'Part #':row['Part Number'],'Description':row['Part Number'], 'List Price': row['List Price'], 'WWT Cost':row['Reseller Net Price'],
-                # 'Qty':row['Qty'],'Manufacturer':row[None],'Vendor':None}))
-                # print(row)
-
+# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
 def reformat_header(filename):
     with open(filename) as csv_file:
         csv_reader = csv.DictReader(csv_file)
@@ -48,46 +20,25 @@ def reformat_header(filename):
             count += 1
         print(csv_reader.fieldnames)
 
-# def csv_avt(filename):
-    # with open(filename) as csv_file:
-        # csv_reader = csv.DictReader(csv_file)
-        # count = 0
-        # for fieldname in csv_reader.fieldnames:
-            # fieldname = fieldname.lower()
-            # fieldname = fieldname.translate(str.maketrans('','',".,"))
-            # fieldname = fieldname.replace(" ","")
-            # csv_reader.fieldnames[count] = fieldname
-            # print(csv_reader.fieldnames[count])
-            # count += 1
-        # part_name = part_finder(csv_reader)
-        # descrition_name = description_finder(csv_reader)
-        # listprice_name = listprice_finder(csv_reader)
-        # wwtcost_name = wwtprice_finder(csv_reader)
-        # quantity_name = quantity_finder(csv_reader)
-        # manufacturer_name = manufacturer_finder(csv_reader)
-        # vendorquote_name = vendorquote_finder(csv_reader)
-        # with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
-            # headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Qty','Manufacturer','Vendor','Additional Description','Vendor Quote #']
-            # csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
-            # csv_writer.writeheader()
-            # for row in csv_reader:
-                # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
-                # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
+# 
 
 def csv_avt(filename,filepath,vendorname,manufacturername):
     items = 0
-
+    
+    # opens input file 
     with open(filepath, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
+        # case-desensitizes and removes punctuation
         for fieldname in csv_reader.fieldnames:
             fieldname = fieldname.lower()
             fieldname = fieldname.translate(str.maketrans('','',".,"))
             fieldname = fieldname.replace("\n","")
             fieldname = fieldname.replace(" ","")
             csv_reader.fieldnames[count] = fieldname
-            # print(csv_reader.fieldnames[count])
             count += 1
+        
+        # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
         part_name = part_finder(csv_reader)
         description_name = description_finder(csv_reader)
         listprice_name = listprice_finder(csv_reader)
@@ -95,13 +46,18 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         quantity_name = quantity_finder(csv_reader)
         manufacturer_name = manufacturer_finder(csv_reader)
         vendorquote_name = vendorquote_finder(csv_reader)
-
+        
+        
+        # writes into a new file 
         with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
+            # headers for wwt quote template 
             headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
+            
+            #creates CSV dictionary writer
             csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
             csv_writer.writeheader()
 
-
+            # iterates through rows of csv_reader dictionary object
             for i, row in enumerate(csv_reader):
                 # print("i:", i)
                 # print(items)
@@ -110,64 +66,56 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 # print(items)
                 # if i >= (items):
                     # break
+                    
+                #terminates when rows are not populated by part #, description and quantity
                 if row[part_name] is None and row[description_name] is None and row[quantity_name] is None:
                     break
 
+                #initializes empty dictionary to add keys-value pairs into 
                 output_dictionary = {}
+                # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry. 
+                # updates Part #
                 if part_name is not None:
                     output_dictionary.update({'Part #':row[part_name]})
                 else:
                     output_dictionary.update({'Part #':None})
+                #updates Description
                 if description_name is not None:
                     output_dictionary.update({'Description':row[description_name]})
                 else:
                     output_dictionary.update({'Description':None})
+                # updates List Price
                 if listprice_name is not None:
                     output_dictionary.update({'List Price':row[listprice_name]})
                 else:
                     output_dictionary.update({'List Price':None})
+                # updates WWT Cost
                 if wwtcost_name is not None:
                     output_dictionary.update({'WWT Cost':row[wwtcost_name]})
                 else:
                     output_dictionary.update({'WWT Cost':None})
+                # updates Qty
                 if quantity_name is not None:
                     output_dictionary.update({'Qty':row[quantity_name]})
                 else:
                     output_dictionary.update({'Description':None})
-                
+                # updates Manufacturer
                 if manufacturer_name is not None:
                     output_dictionary.update({'Manufacturer':row[manufacturer_name]})
                 else:
                     output_dictionary.update({'Manufacturer':manufacturername})
+                # updates Vendor Quote #
                 if vendorquote_name is not None:
                     output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
                 else:
                     output_dictionary.update({'Vendor Quote #':None})
+                
+                #updates additional description and vendor fields
                 output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
                 csv_writer.writerow(output_dictionary)
-                # (csv_writer.writerow({'Part #':row[part_name],'Description':row[description_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
-                # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
 
-# def part_finder(csv_dict):
-    # if 'partnumber' in csv_dict.fieldnames:
-        # return 'partnumber'
-    # elif 'itemnumber' in csv_dict.fieldnames:
-        # return 'itemnumber'
-    # elif 'item' in csv_dict.fieldnames:
-        # return 'item'
-    # elif 'mfrpart#' in csv_dict.fieldnames:
-        # return 'mfrpart#'
-    # elif 'part#' in csv_dict.fieldnames:
-        # return 'part#'
-    # elif 'itemno' in csv_dict.fieldnames:
-        # return 'itemno'
-    # elif 'partno' in csv_dict.fieldnames:
-        # return 'partno'
-    # else:
-        # print('Part # fieldname not found.')
-        # return None
-
+# Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
@@ -189,6 +137,7 @@ def part_finder(csv_dict):
         return None
     return part_name
 
+# Looks for variations of 'Description' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def description_finder(csv_dict):
     if 'product' in csv_dict.fieldnames:
         return 'product'
@@ -200,6 +149,7 @@ def description_finder(csv_dict):
         print('Description fieldname not found.')
         return None
 
+# Looks for variations of 'List Price' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def listprice_finder(csv_dict):
     if 'listprice' in csv_dict.fieldnames:
         return 'listprice'
@@ -212,7 +162,8 @@ def listprice_finder(csv_dict):
     else:
         print('Price fieldname not found.')
         return None
-
+        
+# Looks for variations of 'WWT Price' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def wwtprice_finder(csv_dict):
     if 'resellernetprice' in csv_dict.fieldnames:
         return 'resellernetprice'
@@ -230,6 +181,7 @@ def wwtprice_finder(csv_dict):
         print('WWT Cost fieldname not found.')
         return None
 
+# Looks for variations of 'Qty' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def quantity_finder(csv_dict):
     if 'qty' in csv_dict.fieldnames:
         return 'qty'
@@ -243,7 +195,7 @@ def quantity_finder(csv_dict):
         print('Quantity fieldname not found.')
         return None
 
-
+# Looks for variations of 'Manufacturer' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def manufacturer_finder(csv_dict):
     if 'manufacturer' in csv_dict.fieldnames:
         return 'manufacturer'
@@ -253,6 +205,7 @@ def manufacturer_finder(csv_dict):
         print('Manufacturer fieldname not found.')
         return None
 
+# Looks for variations of 'Vendor Quote #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found. 
 def vendorquote_finder(csv_dict):
     if 'quotename' in csv_dict.fieldnames:
         return 'quotename'
