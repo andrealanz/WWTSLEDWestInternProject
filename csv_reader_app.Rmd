@@ -21,8 +21,8 @@ source_python("csv_reader.py")
 #read in list of vendors and manufacturers
 vendors <- read_excel("ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
-#manufacturers <- read_excel("ActiveMFGs.xls")
-#manufacturers <- sort(manufacturers$NAME)
+manufacturers <- read_excel("ActiveMFGs.xls")
+manufacturers <- sort(manufacturers$NAME)
 ```
 
 ```{r eruptions, echo=FALSE}
@@ -38,6 +38,13 @@ inputPanel(
                   #create placeholder
                     placeholder = 'Select a vendor',
                     onInitialize = I('function() { this.setValue(""); }'))
+  ),
+  #manufacturer search (is not required to view/download csv and will automatically populate column if in original file)
+  selectizeInput("manufacturerChoice", "Manufacturers", manufacturers, selected = NULL, multiple = FALSE, 
+                  options = list(
+                  #create placeholder
+                    placeholder = 'Select a manufacturer:',
+                    onInitialize = I('function() { this.setValue(""); }'))
   )
 )
 
@@ -50,7 +57,7 @@ observe({
       #error handle python function
       error <<- try(
         #generate .csv template
-        csv_avt(inFile$name,inFile$datapath, input$vendorChoice)
+        csv_avt(inFile$name,inFile$datapath, input$vendorChoice,input$manufacturerChoice)
       )
       #save .csv generated
       mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)

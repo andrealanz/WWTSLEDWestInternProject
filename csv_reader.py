@@ -74,7 +74,7 @@ def reformat_header(filename):
                 # (csv_writer.writerow({'Part #':row[part_name],'Description':row[descrition_name], 'List Price': row[listprice_name], 'WWT Cost':row[wwtcost_name],
                 # 'Qty':row[quantity_name],'Manufacturer':None,'Vendor':None,'Additional Description':None,'Vendor Quote #':None}))
 
-def csv_avt(filename,filepath,vendorname):
+def csv_avt(filename,filepath,vendorname,manufacturername):
     items = 0
 
     with open(filepath, encoding='utf-8-sig') as csv_file:
@@ -137,7 +137,7 @@ def csv_avt(filename,filepath,vendorname):
                 if manufacturer_name is not None:
                     output_dictionary.update({'Manufacturer':row[manufacturer_name]})
                 else:
-                    output_dictionary.update({'Manufacturer':None})
+                    output_dictionary.update({'Manufacturer':manufacturername})
                 if vendorquote_name is not None:
                     output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
                 else:
@@ -273,4 +273,4 @@ def vendorquote_finder(csv_dict):
 
 # reformat_header('5807.csv')
 # csv_avt('QUO-test.csv', 'QUO-test.csv', "test")
-# csv_avt('5807.csv', '5807.csv',"b")
+# csv_avt('GBQUOTEFinal.csv', 'GBQUOTEFinal.csv',"GRAYBAR ELECTRIC COMPANY")
