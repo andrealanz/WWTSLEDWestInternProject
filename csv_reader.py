@@ -134,6 +134,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     output_dictionary.update({'Qty':row[quantity_name]})
                 else:
                     output_dictionary.update({'Description':None})
+                
                 if manufacturer_name is not None:
                     output_dictionary.update({'Manufacturer':row[manufacturer_name]})
                 else:
