@@ -1,3 +1,5 @@
+library(openxlsx)
+
 #Read in data
 data <- read.xlsx("Backlog_Master_07-12 Forecast.xlsx",sheet = 4, colNames = TRUE)
 
