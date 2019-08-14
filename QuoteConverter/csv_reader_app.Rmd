@@ -19,9 +19,9 @@ library(tools)
 source_python("csv_reader.py")
 
 #read in list of vendors and manufacturers
-vendors <- read_excel("ActiveVendors.xls")
+vendors <- read_excel("./sources/ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
-manufacturers <- read_excel("ActiveMFGs.xls")
+manufacturers <- read_excel("./sources/ActiveMFGs.xls")
 manufacturers <- sort(manufacturers$NAME)
 ```
 
