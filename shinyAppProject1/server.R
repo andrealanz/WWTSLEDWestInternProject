@@ -2,15 +2,8 @@ library(shiny)
 library(ggplot2)
 library(DT)
 library(openxlsx)
-library(here)
 
 function(input, output) {
-  
-  #Prepare Data frame
-  data <- read.xlsx(here("data", "Backlog_Master_07-12 Forecast.xlsx"),sheet = 4, colNames = TRUE)
-  colnames(data) <- as.character(unlist(data[1,]))
-  data <- data[-1, ]
-  chart_data <- data
   
   # Filter data based on selections
   output$chart1 <- renderPlotly({
@@ -47,10 +40,10 @@ function(input, output) {
     if(input$`P&L1` != "All"){
       chart_data <- data[data$`P&L` == input$`P&L1`,]
     }
-    selectInput("AM", "AM", c("none","All", unique(as.character((chart_data$`External Rep`)))), selected = "none")
+    selectizeInput("AM", "AM", c("none","All", unique(as.character((chart_data$`External Rep`)))))
   })
   
   output$thirdSelection <- renderUI({
-    selectInput("order_options", label = "Order Options", c("none", "% GP", "Status"))
+    selectizeInput("order_options", label = "Order Options", c("none", "% GP", "Status"))
   })
 }

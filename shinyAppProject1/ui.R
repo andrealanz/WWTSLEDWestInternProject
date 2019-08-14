@@ -1,8 +1,6 @@
 library(shiny)
 library(shinydashboard)
 library(plotly)
-# Load the ggplot2 package which provides
-# the 'mpg' dataset.
 library(ggplot2)
 
 
@@ -18,13 +16,18 @@ body <- dashboardBody(
     tabItem(tabName = "profit_loss",
         fluidRow(
           box(
+            checkboxGroupInput("metric", "Choose Metric", c("%GP"))
+          )
+        ),
+        fluidRow(
+          box(
             plotlyOutput("chart1"),
             width = NULL, title = "%GP by P&L"
           )
         ),
         fluidRow(
           box(
-              selectInput("P&L1", "P&L", c("All", unique(as.character((data$`P&L`)))), selected = "All")       
+              selectizeInput("P&L1", "P&L", c("All", unique(as.character((data$`P&L`)))), selected = "All")       
           ),
           box(
             uiOutput("secondSelection")       
