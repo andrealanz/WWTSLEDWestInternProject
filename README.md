@@ -6,4 +6,4 @@
 
 Both projects are deployed on AWS for cost-effective and easy access.
 
-_Note:_ "HowToUseCSVReader.md" _can be found in _"QuoteConverter"_ folder_
+_Note:_ "HowToUseCSVReader.md" _can be found in_ "QuoteConverter" _folder_
