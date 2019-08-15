@@ -1,4 +1,4 @@
-# How To Use
+### How To Use
 
 _**Note:** after selecting a quote file and vendor, the file will be converted._
 

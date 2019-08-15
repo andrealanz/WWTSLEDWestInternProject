@@ -27,6 +27,9 @@ file_types <- c("csv", "xls", "xlsx")
 ```
 
 ```{r eruptions, echo=FALSE}
+#help button
+actionButton("help", "Help")
+
 #create 1st input UI pane
 inputPanel(
   #file upload interface
@@ -149,4 +152,11 @@ renderDataTable(
   }
 )
 
+#handle if help button is pressed
+observeEvent(input$help, {
+  #open a window with help documentation
+  showModal(modalDialog(
+    includeHTML("HowToUseCSVReader.html")
+  ))}
+)
 ```
