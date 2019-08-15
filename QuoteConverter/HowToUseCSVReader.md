@@ -9,7 +9,7 @@ _**Note:** after selecting CSV File and Vendor, the CSV file will be converted._
 2.  Choose Manufacturer and Vendor to auto-complete columns
     * Click "Select a manufacturer" dropdown and select manufacturer for chosen quote
     * Click "Select a vendor" dropdown and select vendor for chosen quote
-3.  _**Optional**_ View CSV prior to downloading
+3.  _**Optional:** View CSV prior to downloading_
     * Click "View CSV"
 4.  Download Normalized CSV File
     * Click "Download"
