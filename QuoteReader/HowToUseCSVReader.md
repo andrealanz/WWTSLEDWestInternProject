@@ -16,7 +16,8 @@ _**Note:** after selecting a quote file and vendor, the file will be converted._
 
 ________________________________________________________________________________
 
-#### Current Convertable Quotes List
+#### Current Convertible Quotes List
 Vendor | File Name
 ------ | ---------
-test | test
+NetApp | NetApp_5807.csv
+GB     | GBQUOTE.csv
