@@ -1,11 +1,11 @@
 # How To Use
 
-_**Note:** after selecting CSV File and Vendor, the CSV file will be converted._
+_**Note:** after selecting a quote file and vendor, the file will be converted._
 
-1.  Select CSV file to convert
-    * Click "Browse..." under "Choose CSV File"
-    * Find local csv file
-    * open the file
+1.  Select a quote to convert
+    * Click "Browse..." under "Choose Quote"
+    * Find local file
+    * Open the file
 2.  Choose Manufacturer and Vendor to auto-complete columns
     * Click "Select a manufacturer" dropdown and select manufacturer for chosen quote
     * Click "Select a vendor" dropdown and select vendor for chosen quote
