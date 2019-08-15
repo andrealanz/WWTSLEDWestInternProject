@@ -5,3 +5,5 @@
 2) Internal web app tool for Matthew Jenkins, SLED West Director, and his Account Managers. This app is an R ShinyApp that reads in data from a raw Backlog Order Summary csv file and creates an interactive pie chart that displays only the most important data in a simple design for quick information gathering. There are future possibilities for visualizing the data and performing analytics.
 
 Both projects are deployed on AWS for cost-effective and easy access.
+
+_Note:_ "HowToUseCSVReader.md" _can be found in _"QuoteConverter"_ folder_
