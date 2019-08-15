@@ -85,6 +85,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         quantity_name = quantity_finder(csv_reader)
         manufacturer_name = manufacturer_finder(csv_reader)
         vendorquote_name = vendorquote_finder(csv_reader)
+        add_description_name = add_description_finder(csv_reader)
 
 
         # writes into a new file
@@ -150,7 +151,11 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     output_dictionary.update({'Vendor Quote #':None})
 
                 #updates additional description and vendor fields
-                output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
+                if add_description_name is not None:
+                    output_dictionary.update({'Additional Description':row[add_description_name], 'Vendor':vendorname})
+                else:
+                    output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
+                
                 csv_writer.writerow(output_dictionary)
 
 
@@ -262,6 +267,14 @@ def vendorquote_finder(csv_dict):
         return 'quotenumber'
     else:
         print('Vendor Quote # fieldname not found.')
+        return None
+
+# Looks for variations of 'Additional Description' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+def add_description_finder(csv_dict):
+    if 'additionaldescription' in csv_dict.fieldnames:
+        return 'additionaldescription'
+    else:
+        print('Additional Description fieldname not found.')
         return None
 
 # reformat_header('5807.csv')
