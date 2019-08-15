@@ -1,5 +1,5 @@
 ---
-title: "CSV Reader"
+title: "Quote Reader"
 resource_files:
 - .rsconnect_profile
 runtime: shiny
@@ -23,15 +23,16 @@ vendors <- read_excel("./sources/ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
 manufacturers <- read_excel("./sources/ActiveMFGs.xls")
 manufacturers <- sort(manufacturers$NAME)
+file_types <- c("csv", "xls", "xlsx")
 ```
 
 ```{r eruptions, echo=FALSE}
 #create 1st input UI pane
 inputPanel(
   #file upload interface
-  fileInput("file1", "Choose CSV File",
+  fileInput("file1", "Upload Quote",
               multiple = FALSE,
-              accept = c(".csv")),
+              accept = file_types),
   
   #manufacturer search (is not required to view/download csv and will automatically populate column if in original file)
   selectizeInput("manufacturerChoice", "Manufacturer", manufacturers, selected = NULL, multiple = FALSE, 
@@ -53,7 +54,7 @@ inputPanel(
 observe({
   #run csv reader if .csv file uploaded, vendor selected
   if(!is.null(input$file1)){  
-    if(input$vendorChoice != "" && file_ext((input$file1)$datapath) == "csv"){
+    if(input$vendorChoice != "" && file_ext((input$file1)$datapath) %in% file_types){
       inFile <- input$file1
       #error handle python function
       error <<- try(
@@ -72,12 +73,12 @@ observe({
 renderText({
   if(!is.null(input$file1)){
     #handle incorrect file extension
-    if(file_ext((input$file1)$datapath) != "csv"){
+    if(!(file_ext((input$file1)$datapath) %in% file_types)){
       "Error: Incorrect file extension"
     }
     #check if a file was generated
     else if(input$vendorChoice != ""){
-        if(file_ext((input$file1)$datapath) == "csv"
+        if(file_ext((input$file1)$datapath) %in% file_types
        && is.null(error)){
           "Template Created"
         }
@@ -93,7 +94,7 @@ output$download_button <- renderUI({
   #button rendered if conditions hold
   if(!is.null(input$file1)) {
     if(input$vendorChoice != ""
-       && file_ext((input$file1)$datapath) == "csv"){
+       && file_ext((input$file1)$datapath) %in% file_types){
       if(is.null(error)){
         downloadButton("download", "Download")
       }
@@ -106,7 +107,7 @@ output$viewCSV <- renderUI({
   #button rendered if conditions hold
   if(!is.null(input$file1)){
     if(input$vendorChoice != ""
-      && file_ext((input$file1)$datapath) == "csv"){
+      && file_ext((input$file1)$datapath) %in% file_types){
         if(is.null(error)){
           actionButton("viewCSV", "View CSV")
         }
@@ -142,7 +143,7 @@ renderDataTable(
   #render datatable if conditions hold
   if(!is.null(input$viewCSV)){
    if(input$viewCSV > 0 && input$vendorChoice != ""
-      && file_ext((input$file1)$datapath) == "csv"){
+      && file_ext((input$file1)$datapath) %in% file_types){
       mydata
    }
   }
