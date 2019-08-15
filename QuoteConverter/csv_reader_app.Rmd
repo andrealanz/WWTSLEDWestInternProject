@@ -32,18 +32,19 @@ inputPanel(
   fileInput("file1", "Choose CSV File",
               multiple = FALSE,
               accept = c(".csv")),
+  
+  #manufacturer search (is not required to view/download csv and will automatically populate column if in original file)
+  selectizeInput("manufacturerChoice", "Manufacturer", manufacturers, selected = NULL, multiple = FALSE, 
+                  options = list(
+                  #create placeholder
+                    placeholder = 'Select a manufacturer:',
+                    onInitialize = I('function() { this.setValue(""); }'))
+  ),
   #vendor search interface
   selectizeInput("vendorChoice", "Vendor", vendors, selected = NULL, multiple = FALSE, 
                   options = list(
                   #create placeholder
                     placeholder = 'Select a vendor',
-                    onInitialize = I('function() { this.setValue(""); }'))
-  ),
-  #manufacturer search (is not required to view/download csv and will automatically populate column if in original file)
-  selectizeInput("manufacturerChoice", "Manufacturers", manufacturers, selected = NULL, multiple = FALSE, 
-                  options = list(
-                  #create placeholder
-                    placeholder = 'Select a manufacturer:',
                     onInitialize = I('function() { this.setValue(""); }'))
   )
 )
