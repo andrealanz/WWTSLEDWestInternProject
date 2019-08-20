@@ -163,7 +163,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
                 
                 csv_writer.writerow(output_dictionary)
-                return None
 
 
 # Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
