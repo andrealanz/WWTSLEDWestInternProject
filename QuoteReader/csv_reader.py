@@ -26,6 +26,7 @@ def get_xls_xlsx_files():
     return xls_xlsx_files
 
 def convert_xls_xlsx_to_csv():
+    bad_sheets = ['T&C', 'XDO_METADATA'];
     # populate array from func
     xls_xlsx_files = get_xls_xlsx_files()
     # loop through array
@@ -34,12 +35,16 @@ def convert_xls_xlsx_to_csv():
         # get all possible sheet names (could be more than 1)
         sheets = wb.sheet_names()
         for sheet in sheets:
+            # check if the sheet is a metadata sheet or the Terms and Conds sheet
+            if sheet in bad_sheets:
+                # skip this sheet if it is
+                break
             # get specific sheet as a Sheet object (needed for sh.nrows below)
             sh = wb.sheet_by_name(sheet)
             # head is raw file name without its file extension
             head, sep, tail = file.partition('.')
             # append csv file extension to string
-            head += ".csv"
+            head += sheet + ".csv"
             # create csv file with same name
             csv_file = open(head, 'w', newline='')
             wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
@@ -76,19 +81,19 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     # opens input file
     with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        
+
         #get fieldnames
         try:
             csv_reader.fieldnames
         except UnicodeDecodeError:
             print("Invalid header")
             return "Invalid header"
-         
+
         #delete unnecessary rows (check if second fieldname is blank)
         while True:
             count = 0
             col_names = csv_reader.fieldnames
-            if col_names[0] != "": 
+            if col_names[0] != "":
                 # case-desensitizes and removes punctuation
                 for fieldname in csv_reader.fieldnames:
                     fieldname = fieldname.lower()
@@ -97,10 +102,10 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     fieldname = fieldname.replace(" ","")
                     csv_reader.fieldnames[count] = fieldname
                     count += 1
-                    
+
                 if part_finder(csv_reader) is not None:
                     break
-            csv_reader = csv.DictReader(csv_file) 
+            csv_reader = csv.DictReader(csv_file)
 
         # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
         part_name = part_finder(csv_reader)
@@ -135,11 +140,11 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 #terminates when rows are not populated by part #, description and quantity
                 if row[part_name] is None and row[description_name] is None and row[quantity_name] is None:
                     break
-                    
+
                 #terminates with incorrect part #
                 if row[part_name] in part_blacklist:
                     break
-                    
+
                 #initializes empty dictionary to add keys-value pairs into
                 output_dictionary = {}
                 # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry.
@@ -184,7 +189,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     output_dictionary.update({'Additional Description':row[add_description_name], 'Vendor':vendorname})
                 else:
                     output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
-                
+
                 csv_writer.writerow(output_dictionary)
 
 
@@ -318,4 +323,4 @@ def add_description_finder(csv_dict):
 # call to convert xlsx/xlsx files to csv
 
 ############# NOT WORKING YET SO DONT UNCOMMENT (specifically with PAN quotes) ###################)
-# convert_xls_xlsx_to_csv()
+convert_xls_xlsx_to_csv()
