@@ -84,7 +84,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             print("Invalid header")
             return "Invalid header"
         # case-desensitizes and removes punctuation
-        for fieldname in csv_reader.fieldnames:
+        for fieldname in col_names:
             fieldname = fieldname.lower()
             fieldname = fieldname.translate(str.maketrans('','',".,"))
             fieldname = fieldname.replace("\n","")
@@ -107,7 +107,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         with open('wwt_'  + filename,mode='w',newline='') as wwt_file:
             # headers for wwt quote template
             headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
-
+            # invalid part numbers
+            part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total']
             #creates CSV dictionary writer
             csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
             csv_writer.writeheader()
@@ -115,8 +116,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             # iterates through rows of csv_reader dictionary object
             for i, row in enumerate(csv_reader):
                 # items is a counter for parts with a description field (doesn't work for every quote)
-                if row[description_name]:
-                    items += 1
+                #if row[description_name]:
+                #   items += 1
                 # if the iterator is greater than or equal to the items counter, stop iterating
                 # if i >= (items):
                     # break
@@ -124,7 +125,11 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 #terminates when rows are not populated by part #, description and quantity
                 if row[part_name] is None and row[description_name] is None and row[quantity_name] is None:
                     break
-
+                    
+                #terminates with incorrect part #
+                if row[part_name] in part_blacklist:
+                    break
+                    
                 #initializes empty dictionary to add keys-value pairs into
                 output_dictionary = {}
                 # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry.
@@ -203,6 +208,8 @@ def description_finder(csv_dict):
         return 'description'
     elif 'productdescription' in csv_dict.fieldnames:
         return 'productdescription'
+    elif 'descriptionandproductinfo' in csv_dict.fieldnames:
+        return 'descriptionandproductinfo'
     else:
         print('Description fieldname not found.')
         return None
@@ -287,6 +294,8 @@ def vendorquote_finder(csv_dict):
 def add_description_finder(csv_dict):
     if 'additionaldescription' in csv_dict.fieldnames:
         return 'additionaldescription'
+    if 'comments' in csv_dict.fieldnames:
+        return 'comments'
     else:
         print('Additional Description fieldname not found.')
         return None
