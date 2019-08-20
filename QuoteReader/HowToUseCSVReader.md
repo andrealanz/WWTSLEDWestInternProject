@@ -3,7 +3,7 @@
 _**Note:** after selecting a quote file and vendor, the file will be converted._
 
 1.  Select a quote to convert
-    * Click "Browse..." under "Choose Quote"
+    * Click "Browse..." under "Upload Quote"
     * Find local file
     * Open the file
 2.  Choose Manufacturer and Vendor to auto-complete columns
