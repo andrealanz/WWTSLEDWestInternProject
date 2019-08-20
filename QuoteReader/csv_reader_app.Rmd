@@ -145,7 +145,7 @@ renderDataTable(
   #render datatable if conditions hold
   if(!is.null(input$viewCSV)){
    if(input$viewCSV > 0 && input$vendorChoice != ""
-      && file_ext((input$file1)$datapath) %in% file_types){
+      && file_ext((input$file1)$datapath) %in% file_types && is.null(error)){
       mydata
    }
   }

@@ -65,7 +65,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     items = 0
 
     # opens input file
-    with open(filepath, encoding='utf-8-sig') as csv_file:
+    with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
         #get fieldnames
