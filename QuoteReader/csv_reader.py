@@ -26,6 +26,7 @@ def get_xls_xlsx_files():
     return xls_xlsx_files
 
 def convert_xls_xlsx_to_csv():
+    # list of sheets that we don't want to convert
     bad_sheets = ['T&C', 'XDO_METADATA'];
     # populate array from func
     xls_xlsx_files = get_xls_xlsx_files()
@@ -35,9 +36,9 @@ def convert_xls_xlsx_to_csv():
         # get all possible sheet names (could be more than 1)
         sheets = wb.sheet_names()
         for sheet in sheets:
-            # check if the sheet is a metadata sheet or the Terms and Conds sheet
+            # check if the sheet is a bad sheet
             if sheet in bad_sheets:
-                # skip this sheet if it is
+                # skip the sheet if it is
                 break
             # get specific sheet as a Sheet object (needed for sh.nrows below)
             sh = wb.sheet_by_name(sheet)
