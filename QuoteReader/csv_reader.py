@@ -11,8 +11,16 @@ def get_xls_xlsx_files():
     for xls_file in glob.glob("*.xls"):
         # add file name to array
         xls_xlsx_files.append(xls_file)
+    # loop through files ending in .xls in quotes dir
+    for xls_file in glob.glob("quotes/*.xls"):
+        # add file name to array
+        xls_xlsx_files.append(xls_file)
     # loop through files ending in .xlsx
     for xlsx_file in glob.glob("*.xlsx"):
+        # add file name to array
+        xls_xlsx_files.append(xlsx_file)
+    # loop through files ending in .xlsx in quotes dir
+    for xlsx_file in glob.glob("quotes/*.xlsx"):
         # add file name to array
         xls_xlsx_files.append(xlsx_file)
     return xls_xlsx_files
@@ -62,6 +70,7 @@ def reformat_header(filename):
 #
 
 def csv_avt(filename,filepath,vendorname,manufacturername):
+    # counter for total parts in the quote
     items = 0
 
     # opens input file
@@ -105,11 +114,10 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
 
             # iterates through rows of csv_reader dictionary object
             for i, row in enumerate(csv_reader):
-                # print("i:", i)
-                # print(items)
+                # items is a counter for parts with a description field (doesn't work for every quote)
                 if row[description_name]:
                     items += 1
-                # print(items)
+                # if the iterator is greater than or equal to the items counter, stop iterating
                 # if i >= (items):
                     # break
 
