@@ -76,7 +76,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     # opens input file
     with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        count = 0
         
         #get fieldnames
         try:
@@ -86,17 +85,22 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             return "Invalid header"
          
         #delete unnecessary rows (check if second fieldname is blank)
-        while "" == csv_reader.fieldnames[1]:
+        while True:
+            count = 0
+            col_names = csv_reader.fieldnames
+            if col_names[0] != "": 
+                # case-desensitizes and removes punctuation
+                for fieldname in csv_reader.fieldnames:
+                    fieldname = fieldname.lower()
+                    fieldname = fieldname.translate(str.maketrans('','',".,"))
+                    fieldname = fieldname.replace("\n","")
+                    fieldname = fieldname.replace(" ","")
+                    csv_reader.fieldnames[count] = fieldname
+                    count += 1
+                    
+                if part_finder(csv_reader) is not None:
+                    break
             csv_reader = csv.DictReader(csv_file) 
-            
-        # case-desensitizes and removes punctuation
-        for fieldname in csv_reader.fieldnames:
-            fieldname = fieldname.lower()
-            fieldname = fieldname.translate(str.maketrans('','',".,"))
-            fieldname = fieldname.replace("\n","")
-            fieldname = fieldname.replace(" ","")
-            csv_reader.fieldnames[count] = fieldname
-            count += 1
 
         # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
         part_name = part_finder(csv_reader)
