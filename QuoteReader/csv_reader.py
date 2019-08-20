@@ -4,7 +4,7 @@ import xlrd
 import glob
 
 # get an array of all xls and xlsx files
-def get_xls_xlsx_files():
+def get_xls_xlsx_files(filepath):
     # Get an array of .xls and .xlsx files
     xls_xlsx_files = []
     # loop through files ending in .xls
@@ -12,7 +12,7 @@ def get_xls_xlsx_files():
         # add file name to array
         xls_xlsx_files.append(xls_file)
     # loop through files ending in .xls in quotes dir
-    for xls_file in glob.glob("quotes/*.xls"):
+    for xls_file in glob.glob(filepath + "/*.xls"):
         # add file name to array
         xls_xlsx_files.append(xls_file)
     # loop through files ending in .xlsx
@@ -20,40 +20,37 @@ def get_xls_xlsx_files():
         # add file name to array
         xls_xlsx_files.append(xlsx_file)
     # loop through files ending in .xlsx in quotes dir
-    for xlsx_file in glob.glob("quotes/*.xlsx"):
+    for xlsx_file in glob.glob(filepath + "/*.xlsx"):
         # add file name to array
         xls_xlsx_files.append(xlsx_file)
     return xls_xlsx_files
 
-def convert_xls_xlsx_to_csv():
+def convert_xls_xlsx_to_csv(file):
     # list of sheets that we don't want to convert
     bad_sheets = ['T&C', 'XDO_METADATA'];
-    # populate array from func
-    xls_xlsx_files = get_xls_xlsx_files()
-    # loop through array
-    for file in xls_xlsx_files:
-        wb = xlrd.open_workbook(file)
-        # get all possible sheet names (could be more than 1)
-        sheets = wb.sheet_names()
-        for sheet in sheets:
-            # check if the sheet is a bad sheet
-            if sheet in bad_sheets:
-                # skip the sheet if it is
-                break
-            # get specific sheet as a Sheet object (needed for sh.nrows below)
-            sh = wb.sheet_by_name(sheet)
-            # head is raw file name without its file extension
-            head, sep, tail = file.partition('.')
-            # append csv file extension to string
-            head += sheet + ".csv"
-            # create csv file with same name
-            csv_file = open(head, 'w', newline='')
-            wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
-            # write to csv file
-            for rownum in range(sh.nrows):
-                wr.writerow(sh.row_values(rownum))
+    # open file
+    wb = xlrd.open_workbook(file)
+    # get all possible sheet names (could be more than 1)
+    sheets = wb.sheet_names()
+    for sheet in sheets:
+        # check if the sheet is a bad sheet
+        if sheet in bad_sheets:
+            # skip the sheet if it is
+            break
+        # get specific sheet as a Sheet object (needed for sh.nrows below)
+        sh = wb.sheet_by_name(sheet)
+        # head is raw file name without its file extension
+        head, sep, tail = file.partition('.')
+        # append csv file extension to string
+        head += sheet + ".csv"
+        # create csv file with same name
+        csv_file = open(head, 'w', newline='')
+        wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+        # write to csv file
+        for rownum in range(sh.nrows):
+            wr.writerow(sh.row_values(rownum))
 
-            csv_file.close()
+        csv_file.close()
 
 # Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
 def reformat_header(filename):
@@ -323,5 +320,5 @@ def add_description_finder(csv_dict):
 
 # call to convert xlsx/xlsx files to csv
 
-############# NOT WORKING YET SO DONT UNCOMMENT (specifically with PAN quotes) ###################)
-convert_xls_xlsx_to_csv()
+# xls_xlsx_files = get_xls_xlsx_files('quotes')
+# convert_xls_xlsx_to_csv(xls_xlsx_files[0])
