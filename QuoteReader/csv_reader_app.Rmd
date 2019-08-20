@@ -59,15 +59,14 @@ observe({
   if(!is.null(input$file1)){  
     if(input$vendorChoice != "" && file_ext((input$file1)$datapath) %in% file_types){
       inFile <- input$file1
-      #error handle python function
-      error <<- try(
-        #generate .csv template
-        csv_avt(inFile$name,inFile$datapath, input$vendorChoice,input$manufacturerChoice)
-      )
-      #save .csv generated
-      mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
-      #remove temporary file
-      file.remove(paste('wwt_',(input$file1)$name, sep = ""))
+      #error handle python function and generate .csv template
+      error <<- csv_avt(inFile$name,inFile$datapath, input$vendorChoice,input$manufacturerChoice)
+      if(is.null(error)){
+        #save .csv generated
+        mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
+        #remove temporary file
+        file.remove(paste('wwt_',(input$file1)$name, sep = ""))
+      }
     }
   }
 })
@@ -86,7 +85,7 @@ renderText({
           "Template Created"
         }
         else{
-          "Invalid Data"
+          error
         }
     }
   }

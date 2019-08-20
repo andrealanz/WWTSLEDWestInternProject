@@ -68,6 +68,12 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     with open(filepath, encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         count = 0
+        #get fieldnames
+        try:
+            col_names = csv_reader.fieldnames
+        except UnicodeDecodeError:
+            print("Invalid header")
+            return "Invalid header"
         # case-desensitizes and removes punctuation
         for fieldname in csv_reader.fieldnames:
             fieldname = fieldname.lower()
@@ -157,6 +163,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
                 
                 csv_writer.writerow(output_dictionary)
+                return None
 
 
 # Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
