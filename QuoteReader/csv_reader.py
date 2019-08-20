@@ -75,6 +75,8 @@ def reformat_header(filename):
 def csv_avt(filename,filepath,vendorname,manufacturername):
     # counter for total parts in the quote
     items = 0
+    #variable for vendor quote number found in lines outside of table
+    vendor_quote_found = None
 
     # opens input file
     with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
@@ -91,7 +93,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         while True:
             count = 0
             col_names = csv_reader.fieldnames
-            if col_names[0] != "":
+            if col_names[0] != "": 
+                
                 # case-desensitizes and removes punctuation
                 for fieldname in csv_reader.fieldnames:
                     fieldname = fieldname.lower()
@@ -100,9 +103,15 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                     fieldname = fieldname.replace(" ","")
                     csv_reader.fieldnames[count] = fieldname
                     count += 1
-
+                #check if valid header found
                 if part_finder(csv_reader) is not None:
                     break
+                #handle if vendor quote number found outside of table
+                else:
+                    for field in col_names:
+                        if str_vendorquote_finder(field) != None:
+                            vendor_quote_found = str_vendorquote_finder(field)
+                            
             csv_reader = csv.DictReader(csv_file)
 
         # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
@@ -177,7 +186,9 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 else:
                     output_dictionary.update({'Manufacturer':manufacturername})
                 # updates Vendor Quote #
-                if vendorquote_name is not None:
+                if vendor_quote_found != None:
+                    output_dictionary.update({'Vendor Quote #':vendor_quote_found})
+                elif vendorquote_name is not None:
                     output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
                 else:
                     output_dictionary.update({'Vendor Quote #':None})
@@ -301,6 +312,13 @@ def vendorquote_finder(csv_dict):
         return 'quotenumber'
     else:
         print('Vendor Quote # fieldname not found.')
+        return None
+
+#Looks for variations of "Vendor Quote #' in lines before dictionary, returns the number as a string. None if no variation found
+def str_vendorquote_finder(quote_str):
+    if 'quote:' in quote_str:
+        return quote_str.replace('quote:', "")
+    else:
         return None
 
 # Looks for variations of 'Additional Description' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
