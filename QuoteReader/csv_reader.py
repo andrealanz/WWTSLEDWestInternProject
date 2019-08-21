@@ -2,14 +2,25 @@ import csv
 import string
 import xlrd
 import glob
+from bs4 import BeautifulSoup
 
-# function that checks to see if the file passed in is of type .csv
-def is_csv(file):
+# function that checks to see if the file passed in is of type .xls/.xlsx
+def is_xls_xlsx(file):
+    good_file = ["xls", "xlsx"]
     head, sep, tail = file.partition('.')
-     # if the file extension is something other than csv, return false
-    if tail != "csv":
+     # if the file extension is something other than xls/xlsx, return false
+    if tail not in good_file:
         return False
-    # otherwise, return true! file is csv
+    # otherwise, return true! file is xls/xlsx
+    return True
+
+# function that checks to see if the file passed in is of type .html
+def is_html(file):
+    head, sep, tail = file.partition('.')
+     # if the file extension is something other than html, return false
+    if tail != "html":
+        return False
+    # otherwise, return true! file is html
     return True
 
 # get an array of all xls and xlsx files
@@ -34,6 +45,7 @@ def get_xls_xlsx_files(filepath):
         xls_xlsx_files.append(xlsx_file)
     return xls_xlsx_files
 
+# accepts xls and xlsx files and their paths and converts to csv file
 def convert_xls_xlsx_to_csv(filename, filepath):
     # list of good sheet names to return
     good_sheets = []
@@ -68,7 +80,32 @@ def convert_xls_xlsx_to_csv(filename, filepath):
     good_sheets.append(csv_file.name)
 
     # return the array of sheets as csv file (with path) ******ONLY SEND FIRST SHEET SO IT WORKS ON FRONT END
-    return good_sheets[0]
+    # return good_sheets[0]
+
+# accepts html file and it's filepath and converts to csv
+def convert_html_to_csv(filename, filepath):
+    html = open(filepath).read()
+    # use html.parser argument instead of lxml
+    soup = BeautifulSoup(html, 'html.parser')
+    # get all tables in html doc
+    tables = soup.findAll("table")
+    output_rows = []
+    # loop thorugh all the tables and save the text in the tables to an output array to wrtie to csv
+    for table in tables:
+        for table_row in table.findAll('tr'):
+            columns = table_row.findAll('td')
+            output_row = []
+            for column in columns:
+                output_row.append(column.text)
+            output_rows.append(output_row)
+        # give the new csv file the same name (just change extension)
+        head, sep, tail = filename.partition('.')
+        head += ".csv"
+    # write output array to new csv file
+    csv_file = open(head, 'w', newline='')
+    wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+    wr.writerows(output_rows)
+    csv_file.close()
 
 # Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
 def reformat_header(filename):
@@ -90,10 +127,17 @@ def reformat_header(filename):
 #
 
 def csv_avt(filename,filepath,vendorname,manufacturername):
-    # check to see if the file type is .csv, or other (like .xls, .xlsx)
-    if is_csv(filename) == False:
-        # if the file is NOT .csv, get the array
+    # check to see if the file type is .xls, .xlsx
+    if is_xls_xlsx(filename) == True:
+        # if the file is .xls, .xlsx
         convert_xls_xlsx_to_csv(filename, filepath)
+        head, sep, tail = filename.partition('.')
+        filepath = head + ".csv"
+        filename = filepath
+    # check to see if the file type is .html
+    if is_html(filename) == True:
+        # if the file is .html
+        convert_html_to_csv(filename, filepath)
         head, sep, tail = filename.partition('.')
         filepath = head + ".csv"
         filename = filepath
@@ -376,11 +420,10 @@ def add_description_finder(csv_dict):
         return None
 
 # reformat_header('5807.csv')
-# csv_avt('QUO-test.csv', 'QUO-test.csv', "test", "test")
-# csv_avt('GBQUOTEFinal.csv', 'GBQUOTEFinal.csv',"GRAYBAR ELECTRIC COMPANY")
-# print(is_csv('quotes/QUO-1953529-L6W1V2-1.xlsx'))
-# print(is_csv('quotes/test.csv'))
-
+# ********** TEMP UNIT TESTS *****************
+# csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
+# csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
+# csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('06062019-WWT-Hawaii Medical Service Association[1].xls', 'quotes/06062019-WWT-Hawaii Medical Service Association[1].xls', "test", "test")
 # csv_avt('PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', 'quotes/PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', "test", "test")
@@ -388,5 +431,7 @@ def add_description_finder(csv_dict):
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
+# csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 
 # print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
+# convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
