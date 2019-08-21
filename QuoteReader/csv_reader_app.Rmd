@@ -23,7 +23,7 @@ vendors <- read_excel("./sources/ActiveVendors.xls")
 vendors <- sort(vendors$NAME)   #alphabetize vendors
 manufacturers <- read_excel("./sources/ActiveMFGs.xls")
 manufacturers <- sort(manufacturers$NAME)
-file_types <- c("csv", "xls", "xlsx")
+file_types <- c("csv", "xls", "xlsx", "html")
 ```
 
 ```{r eruptions, echo=FALSE}
