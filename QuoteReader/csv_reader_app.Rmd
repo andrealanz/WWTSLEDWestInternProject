@@ -63,12 +63,16 @@ observe({
       error <<- csv_avt(inFile$name,inFile$datapath, input$vendorChoice,input$manufacturerChoice)
       if(is.null(error)){
         #save .csv generated
-        mydata <<- read.csv(paste('wwt_',(input$file1)$name, sep = ""), check.names = FALSE)
+        mydata <<- read.csv(paste('wwt_',tools::file_path_sans_ext((input$file1)$name), '.csv', sep = ""), check.names = FALSE)
         #remove temporary file
-        file.remove(paste('wwt_',(input$file1)$name, sep = ""))
+        file.remove(paste('wwt_',tools::file_path_sans_ext((input$file1)$name),'.csv', sep = ""))
       }
     }
   }
+})
+
+renderText({
+  paste('wwt_',tools::file_path_sans_ext((input$file1)$name), '.csv', sep = "")
 })
 
 #text output
