@@ -101,10 +101,10 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     # loop through csv sheet file array (only loops if there's multiple sheets) *****NOT WOKRING ON FRONT END SO LEAVE COMMENTED
     # for file in new_filepath:
     # update new filepath (from .xls, .xlsx to .csv)
-    #filepath = new_filepath
-    #head, sep, tail = new_filepath.partition('/')
+    # filepath = new_filepath
+    # head, sep, tail = new_filepath.partition('/')
     # filter out the directory name and just get file name
-    #filename = tail
+    # filename = tail
 
     # counter for total parts in the quote
     items = 0
@@ -360,6 +360,8 @@ def vendorquote_finder(csv_dict):
 def str_vendorquote_finder(quote_str):
     if 'quote:' in quote_str:
         return quote_str.replace('quote:', "")
+    elif 'arrowquote#:' in quote_str:
+        return quote_str.replace('arrowquote#:', "")
     else:
         return None
 
