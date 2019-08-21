@@ -127,7 +127,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             count = 0
             col_names = csv_reader.fieldnames
             if col_names[0] != "":
-
+                temp_fieldnames = col_names
                 # case-desensitizes and removes punctuation
                 for fieldname in csv_reader.fieldnames:
                     fieldname = fieldname.lower()
@@ -143,7 +143,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 else:
                     for field in col_names:
                         if str_vendorquote_finder(field) != None:
-                            vendor_quote_found = str_vendorquote_finder(field)
+                            vendor_quote_found = str_vendorquote_finder(field).upper()
 
             csv_reader = csv.DictReader(csv_file)
 
