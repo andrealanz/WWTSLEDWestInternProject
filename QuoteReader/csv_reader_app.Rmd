@@ -66,6 +66,9 @@ observe({
         mydata <<- read.csv(paste('wwt_',tools::file_path_sans_ext((input$file1)$name), '.csv', sep = ""), check.names = FALSE)
         #remove temporary file
         file.remove(paste('wwt_',tools::file_path_sans_ext((input$file1)$name),'.csv', sep = ""))
+        if(file_ext((input$file1)$name) != 'csv'){
+            file.remove(paste(tools::file_path_sans_ext((input$file1)$name),'.csv', sep = ""))
+        }
       }
     }
   }
