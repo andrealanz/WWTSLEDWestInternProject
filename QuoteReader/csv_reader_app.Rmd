@@ -122,7 +122,7 @@ output$download <- downloadHandler(
   filename = function() {
     #default file name
     if(!is.null(input$file1)){
-      paste('wwt_', (input$file1)$name, sep = "")
+      paste('wwt_', tools::file_path_sans_ext((input$file1)$name), '.csv',  sep = "")
     }
   },
   content = function(con) {
