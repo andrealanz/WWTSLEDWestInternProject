@@ -71,10 +71,6 @@ observe({
   }
 })
 
-renderText({
-  paste('wwt_',tools::file_path_sans_ext((input$file1)$name), '.csv', sep = "")
-})
-
 #text output
 renderText({
   if(!is.null(input$file1)){

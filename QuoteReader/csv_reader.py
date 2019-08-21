@@ -34,13 +34,13 @@ def get_xls_xlsx_files(filepath):
         xls_xlsx_files.append(xlsx_file)
     return xls_xlsx_files
 
-def convert_xls_xlsx_to_csv(file):
+def convert_xls_xlsx_to_csv(filename, filepath):
     # list of good sheet names to return
     good_sheets = []
     # list of sheets that we don't want to convert
     bad_sheets = ['T&C', 'XDO_METADATA'];
     # open file
-    wb = xlrd.open_workbook(file)
+    wb = xlrd.open_workbook(filepath)
     # get all possible sheet names (could be more than 1)
     sheets = wb.sheet_names()
 
@@ -52,7 +52,7 @@ def convert_xls_xlsx_to_csv(file):
     # get specific sheet as a Sheet object (needed for sh.nrows below)
     sh = wb.sheet_by_name(sheets[0])
     # head is raw file name without its file extension
-    head, sep, tail = file.partition('.')
+    head, sep, tail = filename.partition('.')
     # append csv file extension to string
     # head += sheet + ".csv" ******** ONLY WITH MULTIPLE SHEETS
     head += ".csv"
@@ -93,15 +93,18 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     # check to see if the file type is .csv, or other (like .xls, .xlsx)
     if is_csv(filename) == False:
         # if the file is NOT .csv, get the array
-        new_filepath = convert_xls_xlsx_to_csv(filepath)
+        convert_xls_xlsx_to_csv(filename, filepath)
+        head, sep, tail = filename.partition('.')
+        filepath = head + ".csv"
+        filename = filepath
 
     # loop through csv sheet file array (only loops if there's multiple sheets) *****NOT WOKRING ON FRONT END SO LEAVE COMMENTED
     # for file in new_filepath:
     # update new filepath (from .xls, .xlsx to .csv)
-    filepath = new_filepath
-    head, sep, tail = new_filepath.partition('/')
+    #filepath = new_filepath
+    #head, sep, tail = new_filepath.partition('/')
     # filter out the directory name and just get file name
-    filename = tail
+    #filename = tail
 
     # counter for total parts in the quote
     items = 0
