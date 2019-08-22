@@ -17,9 +17,10 @@ _**Note:** after selecting a quote file and vendor, the file will be converted._
 ________________________________________________________________________________
 
 #### Current Convertible Quotes List
-Vendor | File Name(s)
+Vendor | File Type
 ------ | -----------
-NetApp | NetApp_5807.csv
-GB     | GBQUOTE.csv
-Arrow  | Hawaii Medical Service Association, PAN
-Ingram | QUO
+NetApp | CSV
+GB     | CSV
+Arrow  | XLS
+Ingram | XLSX
+ModTech| PDF
