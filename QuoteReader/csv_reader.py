@@ -10,28 +10,34 @@ import numpy as np
 
 # function that checks to see if the file passed in is of type .pdf
 def is_pdf(file):
-    head, sep, tail = file.partition('.')
+    #get index of last period
+    index = file.rfind('.')
+    ext = file[index:]
      # if the file extension is something other than pdf, return false
-    if tail != 'pdf':
+    if ext != '.pdf':
         return False
     # otherwise, return true! file is pdf
     return True
 
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
-    good_file = ["xls", "xlsx"]
-    head, sep, tail = file.partition('.')
+    good_file = [".xls", ".xlsx"]
+    #get index of last period
+    index = file.rfind('.')
+    ext = file[index:]
      # if the file extension is something other than xls/xlsx, return false
-    if tail not in good_file:
+    if ext not in good_file:
         return False
     # otherwise, return true! file is xls/xlsx
     return True
 
 # function that checks to see if the file passed in is of type .html
 def is_html(file):
-    head, sep, tail = file.partition('.')
+    #get index of last period
+    index = file.rfind('.')
+    ext = file[index:]
      # if the file extension is something other than html, return false
-    if tail != "html":
+    if ext != ".html":
         return False
     # otherwise, return true! file is html
     return True
@@ -43,9 +49,8 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
     #get number of pages
     num_pages = reader.getNumPages()
     #add .csv extension
-    head, sep, tail = filename.partition('.')
-    filename = head + ".csv"
-    if True: #vendorname == 'Modtech':
+    filename = filename.replace(".pdf", ".csv")
+    if vendorname == 'MODTECH SOLUTIONS LLC':
         #convert pdf into rough csv
         tabula.convert_into(filepath, filename, 
                     output_format = "csv", 
@@ -89,7 +94,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         while i < len(data[:,0]):
             #handle when combining rows
             if data[i][0] == '' and i - 1 > headers[0]:
-                #handle doubled quote number
+                #handle doubled part number
                 if data[i][2] != '':
                     data[i-1][2] = data[i-1][2] + ' ' + data[i][2]
                 #handle doubled description
@@ -109,6 +114,74 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data = pd.DataFrame(data = data)
         data.to_csv(filename, index = False)
         
+        return quote_number
+    
+    elif vendorname == 'CARAHSOFT' or vendorname =='CARAHSOFT TECHNOLOGY CORP.'or vendorname == 'CARAHSOFT TECHNOLOGY CORPORATION':
+         #convert pdf into rough csv
+        tabula.convert_into(filepath, filename, 
+                    output_format = "csv", 
+                    pages = '1-' + str(num_pages), 
+                    lattice = False, 
+                    stream = True,
+                    guess = False,
+                    #x coords for modtech columns (in points)
+                    columns = [35, 125, 310, 375, 450, 500]
+                    )
+       
+        #read csv into dataframe
+        data = pd.read_csv(filename, encoding = "ISO-8859-1")
+        #replace "nan"
+        data = data.fillna('blank')
+        #save the pandas df as an array
+        data = data.values
+        #replace 'blank' cells with None                   
+        data[data == 'blank'] = ""  
+        
+        #define header
+        true_header = ["LINE NO.", "PART NO.", "DESCRIPTION", "LIST PRICE", "QUOTE PRICE", "QTY", "EXTENDED PRICE"]
+        #get the row indexes of the headers
+        headers = np.where(data == 'LINE N')[0]
+        #delete the extra headers                   
+        for i in range(1,len(headers)):
+            headers[i] = headers[i] - (i - 1)
+            data = np.delete(data, headers[i], 0)  
+        #replace header                 
+        data[headers[0]] = true_header
+                  
+        #find quote number
+        row_index = np.where(data == "QUOTE NO")[0][0]
+        col_index = np.where(data == "QUOTE NO")[1][0]
+        quote_number = data[row_index][col_index + 2]  + data[row_index][col_index + 3] 
+        
+        #delete or combine unnecessary rows
+        i = headers[0] + 1
+        while i < len(data[:,0]):
+            #non-numbered rows
+            if data[i][0] != '' and i - 1 > headers[0] and not data[i][0].isdigit():
+                data = np.delete(data, i, 0)
+                continue
+            #delete non-part rows
+            if data[i][0] == '' and data[i][1] == '':
+                data = np.delete(data, i, 0)
+                continue
+            #handle when combining rows
+            if data[i][0] == '' and i - 1 > headers[0]:
+                #handle doubled part number
+                if data[i][1] != '':
+                    data[i-1][1] = data[i-1][1] + data[i][1]
+                #handle doubled description
+                if data[i][2] != '':
+                    data[i-1][2] = data[i-1][2] + ' ' + data[i][2]
+                #delete row
+                data = np.delete(data, i, 0)
+                continue
+            
+            i += 1
+            
+         #save the array as a csv               
+        data = pd.DataFrame(data = data)
+        data.to_csv(filename, index = False, header = None)
+            
         return quote_number
 
 # get an array of all xls and xlsx files
@@ -215,6 +288,7 @@ def reformat_header(filename):
 #
 
 def csv_avt(filename,filepath,vendorname,manufacturername):
+    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION']
     #variable for vendor quote number found in lines outside of table
     vendor_quote_found = None
     
@@ -222,20 +296,21 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     if is_xls_xlsx(filename) == True:
         # if the file is .xls, .xlsx
         convert_xls_xlsx_to_csv(filename, filepath)
-        head, sep, tail = filename.partition('.')
-        filepath = head + ".csv"
+        index = filename.rfind('.')
+        ext = filename[index:]
+        filepath = filename.replace(ext, ".csv")
         filename = filepath
     # check to see if the file type is .html
     if is_html(filename) == True:
         # if the file is .html
         convert_html_to_csv(filename, filepath)
-        head, sep, tail = filename.partition('.')
-        filepath = head + ".csv"
+        filepath = filename.replace(".html", ".csv")
         filename = filepath
     if is_pdf(filename) == True:
+        if vendorname not in possible_vendors:
+            return "Vendor not supported"
         vendor_quote_found = convert_pdf_to_csv(filename, filepath, vendorname)
-        head, sep, tail = filename.partition('.')
-        filepath = head + ".csv"
+        filepath = filename.replace(".pdf", ".csv")
         filename = filepath
 
     # loop through csv sheet file array (only loops if there's multiple sheets) *****NOT WOKRING ON FRONT END SO LEAVE COMMENTED
@@ -265,7 +340,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             count = 0
             col_names = csv_reader.fieldnames
             if col_names[0] != "":
-                temp_fieldnames = col_names
                 # case-desensitizes and removes punctuation
                 for fieldname in csv_reader.fieldnames:
                     fieldname = fieldname.lower()
@@ -515,18 +589,19 @@ def add_description_finder(csv_dict):
 
 # reformat_header('5807.csv')
 # ********** TEMP UNIT TESTS *****************
-# csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
+#csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
 # csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('06062019-WWT-Hawaii Medical Service Association[1].xls', 'quotes/06062019-WWT-Hawaii Medical Service Association[1].xls', "test", "test")
 # csv_avt('PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', 'quotes/PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', "test", "test")
 # csv_avt('PAN_Brigham Young University-Hawaii_0020724391.xls', 'quotes/PAN_Brigham Young University-Hawaii_0020724391.xls', "test", "test")
-# csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
-# csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
-# csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
+#csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
+csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
+#csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', "test", "test")
+#csv_avt('Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', 'quotes/Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', "CARAHSOFT", "test")
 
 # print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
 # convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
