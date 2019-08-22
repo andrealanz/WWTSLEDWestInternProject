@@ -3,6 +3,19 @@ import string
 import xlrd
 import glob
 from bs4 import BeautifulSoup
+import tabula
+import PyPDF2
+import pandas as pd
+import numpy as np
+
+# function that checks to see if the file passed in is of type .pdf
+def is_pdf(file):
+    head, sep, tail = file.partition('.')
+     # if the file extension is something other than pdf, return false
+    if tail != 'pdf':
+        return False
+    # otherwise, return true! file is pdf
+    return True
 
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
@@ -22,6 +35,74 @@ def is_html(file):
         return False
     # otherwise, return true! file is html
     return True
+
+def convert_pdf_to_csv(filename, filepath, vendorname):
+    reader = PyPDF2.PdfFileReader(open(filepath, mode='rb'))
+    num_pages = reader.getNumPages()
+    head, sep, tail = filename.partition('.')
+    filename = head + ".csv"
+    if True: #vendorname == 'Modtech':
+        tabula.convert_into(filepath, filename, 
+                    output_format = "csv", 
+                    pages = '1-' + str(num_pages - 1), 
+                    lattice = False, 
+                    stream = True,
+                    guess = False,
+                    #x coords for modtech columns (in points)
+                    columns = [35, 65, 145, 235, 550, 617, 684, 751]
+                    )
+        
+        data = pd.read_csv(filename, encoding = "ISO-8859-1")
+        data = data.fillna('blank')
+        #save the pandas df as an array
+        data = data.values
+        #get the row indexes of the headers
+        headers = np.where(data == 'Ln#')[0]
+
+        #replace 'blank' cells with None                   
+        data[data == 'blank'] = ""             
+                   
+        #delete the extra headers                   
+        for i in range(1,len(headers)):
+            headers[i] = headers[i] - (i - 1)
+            data = np.delete(data, headers[i], 0)
+ 
+        #find quote number
+        quote_index = np.where(data == "Quote#")[1][0]
+        quote_number = data[0][quote_index + 1]                  
+    
+        #delete rows with page number in description
+        for i in range(1, num_pages-1):
+            delete_index = np.where("Page  " +  str(i) + " of  " + str(num_pages) == data)
+            if delete_index:
+                data = np.delete(data, delete_index[0][0], 0)
+    
+        #combine double rows
+        i = headers[0] + 1
+        while i < len(data[:,0]):
+            #handle when combining rows
+            if data[i][0] == '' and i - 1 > headers[0]:
+                #handle doubled quote number
+                if data[i][2] != '':
+                    data[i-1][2] = data[i-1][2] + ' ' + data[i][2]
+                #handle doubled description
+                if data[i][4] != '':
+                    data[i-1][4] = data[i-1][4] + ' ' + data[i][4]
+                #delete row
+                data = np.delete(data, i, 0)
+                continue
+            #handle invalid rows
+            if data[i][0] != '' and data[i][1] == '':
+                #delete row
+                data = np.delete(data, i, 0)
+                continue
+            i += 1
+                
+        #save the array as a csv               
+        data = pd.DataFrame(data = data)
+        data.to_csv(filename, index = False)
+        
+        return quote_number
 
 # get an array of all xls and xlsx files
 def get_xls_xlsx_files(filepath):
@@ -127,6 +208,9 @@ def reformat_header(filename):
 #
 
 def csv_avt(filename,filepath,vendorname,manufacturername):
+    #variable for vendor quote number found in lines outside of table
+    vendor_quote_found = None
+    
     # check to see if the file type is .xls, .xlsx
     if is_xls_xlsx(filename) == True:
         # if the file is .xls, .xlsx
@@ -141,6 +225,11 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         head, sep, tail = filename.partition('.')
         filepath = head + ".csv"
         filename = filepath
+    if is_pdf(filename) == True:
+        vendor_quote_found = convert_pdf_to_csv(filename, filepath, vendorname)
+        head, sep, tail = filename.partition('.')
+        filepath = head + ".csv"
+        filename = filepath
 
     # loop through csv sheet file array (only loops if there's multiple sheets) *****NOT WOKRING ON FRONT END SO LEAVE COMMENTED
     # for file in new_filepath:
@@ -152,8 +241,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
 
     # counter for total parts in the quote
     items = 0
-    #variable for vendor quote number found in lines outside of table
-    vendor_quote_found = None
 
     # opens input file
     with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
@@ -184,7 +271,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 if part_finder(csv_reader) is not None:
                     break
                 #handle if vendor quote number found outside of table
-                else:
+                elif vendor_quote_found == None:
                     for field in col_names:
                         if str_vendorquote_finder(field) != None:
                             vendor_quote_found = str_vendorquote_finder(field).upper()
@@ -432,6 +519,7 @@ def add_description_finder(csv_dict):
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
+csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', "test", "test")
 
 # print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
 # convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
