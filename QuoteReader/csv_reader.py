@@ -9,8 +9,12 @@ import PyPDF2
 import pandas as pd
 import numpy as np
 
-# This program takes in sales quotes of different file types (.csv, .xls, .xlsx, or .pdf) and normalizes the data into a .csv file according to a WWT format
-
+# Description: This program takes in sales quotes of different file types (.csv, .xls, .xlsx, or .pdf) and normalizes the data into a .csv file according to a WWT format
+# Authors: 2019 WWT Interns (Andrea Lanz, Jeremiah Kramer, Sally Maeda, Patrick Rhee, Justin Tokuda)
+#
+# This is intended for internal WWT use only.
+# Current version works for just ISR WWT team in Hawaii
+# Version 1.0
 
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
