@@ -36,12 +36,17 @@ def is_html(file):
     # otherwise, return true! file is html
     return True
 
+# accepts pdf ModTech quotes and their paths and converts to csv file, returns the quote number
 def convert_pdf_to_csv(filename, filepath, vendorname):
+    #read in pdf to get number of pages
     reader = PyPDF2.PdfFileReader(open(filepath, mode='rb'))
+    #get number of pages
     num_pages = reader.getNumPages()
+    #add .csv extension
     head, sep, tail = filename.partition('.')
     filename = head + ".csv"
     if True: #vendorname == 'Modtech':
+        #convert pdf into rough csv
         tabula.convert_into(filepath, filename, 
                     output_format = "csv", 
                     pages = '1-' + str(num_pages - 1), 
@@ -52,7 +57,9 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     columns = [35, 65, 145, 235, 550, 617, 684, 751]
                     )
         
+        #read csv into dataframe
         data = pd.read_csv(filename, encoding = "ISO-8859-1")
+        #replace "nan"
         data = data.fillna('blank')
         #save the pandas df as an array
         data = data.values
@@ -77,7 +84,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
             if delete_index:
                 data = np.delete(data, delete_index[0][0], 0)
     
-        #combine double rows
+        #delete or combine unnecessary rows
         i = headers[0] + 1
         while i < len(data[:,0]):
             #handle when combining rows
