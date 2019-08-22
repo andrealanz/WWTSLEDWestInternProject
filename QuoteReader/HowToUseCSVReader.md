@@ -24,4 +24,4 @@ GB     | CSV
 Arrow  | XLS
 Ingram | XLSX
 ModTech| PDF
-Carahsoft | PDF
+carahsoft | PDF
