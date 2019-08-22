@@ -9,18 +9,8 @@ import PyPDF2
 import pandas as pd
 import numpy as np
 
+# This program takes in sales quotes of different file types (.csv, .xls, .xlsx, or .pdf) and normalizes the data into a .csv file according to a WWT format
 
-
-# function that checks to see if the file passed in is of type .pdf
-def is_pdf(file):
-    #get index of last period
-    index = file.rfind('.')
-    ext = file[index:]
-     # if the file extension is something other than pdf, return false
-    if ext != '.pdf':
-        return False
-    # otherwise, return true! file is pdf
-    return True
 
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
@@ -43,6 +33,17 @@ def is_html(file):
     if ext != '.html':
         return False
     # otherwise, return true! file is html
+    return True
+
+# function that checks to see if the file passed in is of type .pdf
+def is_pdf(file):
+    #get index of last period
+    index = file.rfind('.')
+    ext = file[index:]
+     # if the file extension is something other than pdf, return false
+    if ext != '.pdf':
+        return False
+    # otherwise, return true! file is pdf
     return True
 
 # accepts pdf ModTech quotes and their paths and converts to csv file, returns the quote number
@@ -187,28 +188,6 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
 
         return quote_number
 
-# get an array of all xls and xlsx files
-def get_xls_xlsx_files(filepath):
-    # Get an array of .xls and .xlsx files
-    xls_xlsx_files = []
-    # loop through files ending in .xls
-    for xls_file in glob.glob("*.xls"):
-        # add file name to array
-        xls_xlsx_files.append(xls_file)
-    # loop through files ending in .xls in quotes dir
-    for xls_file in glob.glob(filepath + "/*.xls"):
-        # add file name to array
-        xls_xlsx_files.append(xls_file)
-    # loop through files ending in .xlsx
-    for xlsx_file in glob.glob("*.xlsx"):
-        # add file name to array
-        xls_xlsx_files.append(xlsx_file)
-    # loop through files ending in .xlsx in quotes dir
-    for xlsx_file in glob.glob(filepath + "/*.xlsx"):
-        # add file name to array
-        xls_xlsx_files.append(xlsx_file)
-    return xls_xlsx_files
-
 # accepts xls and xlsx files and their paths and converts to csv file
 def convert_xls_xlsx_to_csv(filename, filepath):
     # list of good sheet names to return
@@ -271,25 +250,9 @@ def convert_html_to_csv(filename, filepath):
     wr.writerows(output_rows)
     csv_file.close()
 
-# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
-def reformat_header(filename):
-    with open(filename) as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        # print(csv_reader.fieldnames)
-        count = 0
 
-        # iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
-        for fieldname in csv_reader.fieldnames:
-            fieldname = fieldname.lower()
-            fieldname = fieldname.translate(str.maketrans('','',".,"))
-            fieldname = fieldname.replace(" ","")
-            csv_reader.fieldnames[count] = fieldname
-            # print(csv_reader.fieldnames[count])
-            count += 1
-        print(csv_reader.fieldnames)
 
 # driver function that calls helper functions to convert csv to csv's in requested WWT format
-
 def csv_avt(filename,filepath,vendorname,manufacturername):
     possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION']
     #variable for vendor quote number found in lines outside of table
@@ -594,7 +557,7 @@ def add_description_finder(csv_dict):
 
 
 
-# ********** TEMP UNIT TESTS *****************
+# ***************** TEMP UNIT TESTS *****************
 #csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
 # csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
@@ -613,3 +576,54 @@ def add_description_finder(csv_dict):
 
 # print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
 # convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
+
+
+
+
+
+
+
+
+
+# additional code for possible future use:
+
+# **********CURRENTLY UNUSED**********
+# get an array of all xls and xlsx files
+def get_xls_xlsx_files(filepath):
+    # Get an array of .xls and .xlsx files
+    xls_xlsx_files = []
+    # loop through files ending in .xls
+    for xls_file in glob.glob("*.xls"):
+        # add file name to array
+        xls_xlsx_files.append(xls_file)
+    # loop through files ending in .xls in quotes dir
+    for xls_file in glob.glob(filepath + "/*.xls"):
+        # add file name to array
+        xls_xlsx_files.append(xls_file)
+    # loop through files ending in .xlsx
+    for xlsx_file in glob.glob("*.xlsx"):
+        # add file name to array
+        xls_xlsx_files.append(xlsx_file)
+    # loop through files ending in .xlsx in quotes dir
+    for xlsx_file in glob.glob(filepath + "/*.xlsx"):
+        # add file name to array
+        xls_xlsx_files.append(xlsx_file)
+    return xls_xlsx_files
+
+# **********CURRENTLY UNUSED**********
+# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
+def reformat_header(filename):
+    with open(filename) as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        # print(csv_reader.fieldnames)
+        count = 0
+
+        # iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
+        for fieldname in csv_reader.fieldnames:
+            fieldname = fieldname.lower()
+            fieldname = fieldname.translate(str.maketrans('','',".,"))
+            fieldname = fieldname.replace(" ","")
+            csv_reader.fieldnames[count] = fieldname
+            # print(csv_reader.fieldnames[count])
+            count += 1
+        print(csv_reader.fieldnames)
