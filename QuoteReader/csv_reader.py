@@ -72,7 +72,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         quote_number = data[0][quote_index + 1]                  
     
         #delete rows with page number in description
-        for i in range(1, num_pages-1):
+        for i in range(1, num_pages):
             delete_index = np.where("Page  " +  str(i) + " of  " + str(num_pages) == data)
             if delete_index:
                 data = np.delete(data, delete_index[0][0], 0)
@@ -519,7 +519,7 @@ def add_description_finder(csv_dict):
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
-csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', "test", "test")
+# csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', "test", "test")
 
 # print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
 # convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
