@@ -459,7 +459,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             # if the iterator is greater than or equal to the items counter, stop iterating
             # if i >= (items):
                 # break
-            # print(row)
+
             # terminates when rows are not populated by part #, description and quantity
             if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
                 print("row doesn't have part #, description, or quantity")
@@ -576,7 +576,9 @@ def listprice_finder(csv_dict):
     if 'listprice' in csv_dict.fieldnames:
         return 'listprice'
     elif 'totallistpriceusd' in csv_dict.fieldnames:
-        return 'total list price (usd)'
+        return 'totallist priceusd'
+    elif 'totallistprice(usd)' in csv_dict.fieldnames:
+        return 'totallistprice(usd)'
     elif 'unitlistprice' in csv_dict.fieldnames:
         return 'unitlistprice'
     elif 'msrp' in csv_dict.fieldnames:
@@ -599,6 +601,8 @@ def wwtprice_finder(csv_dict):
         return 'unitnetprice'
     elif 'price' in csv_dict.fieldnames:
         return 'price'
+    elif 'unitextendedprice(usd)' in csv_dict.fieldnames:
+        return 'unitextendedprice(usd)'
     else:
         print('WWT Cost fieldname not found.')
         return None
