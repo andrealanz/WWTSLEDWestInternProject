@@ -197,14 +197,14 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data.to_csv(filename, index = False, header = None)
 
         return quote_number
-    
+
     elif vendorname == 'TECH DATA':
         #remove watermark
         wm_text = 'For Budgetary Purposes Only'
         inputFile = filepath
         outputFile = 'output.pdf'
-        removeWatermark(wm_text, inputFile, outputFile)   
-        
+        removeWatermark(wm_text, inputFile, outputFile)
+
         #convert pdf into rough csv
         tabula.convert_into(outputFile, filename,
                     output_format = "csv",
@@ -220,18 +220,18 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
 
         #read csv into dataframe
         data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
-        
+
         #replace "nan"
         data = data.fillna('blank')
         #save the pandas df as an array
         data = data.values
         #replace 'blank' cells with None
         data[data == 'blank'] = ""
-        
+
         #get quote number
         first_line = "".join(data[0])
         quote_number = first_line.replace("Price Quotation", "")
-        
+
         #define header
         true_header = ["Part Number", "Product Description", "Ext. Qty", "Unit List Price", "Disc%", "Unit Net Price", "Ext. Net Price"]
         #get the row indexes of the headers
@@ -242,7 +242,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
             data = np.delete(data, headers[i], 0)
         #replace header
         data[headers[0]] = true_header
-        
+
         #delete or combine unnecessary rows
         blacklist = ['Software', 'Services', 'Hardware', 'Estimat', 'Net Gra', 'Terms and C', 'This quote is pr', 'be used as the']
         i = headers[0] + 1
@@ -270,15 +270,15 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     data[i-1][1] = data[i-1][1] + ' ' + data[i][1]
                 #delete row
                 data = np.delete(data, i, 0)
-                continue 
+                continue
             i += 1
-        
+
         #save the array as a csv
         data = pd.DataFrame(data = data)
         data.to_csv(filename, index = False, header = None)
-        
+
         return quote_number
-    
+
     elif vendorname == 'DIAGENIX CORPORATION':
         #convert pdf into rough csv
         tabula.convert_into(filepath, filename,
@@ -290,33 +290,33 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     #x coords for diagenix columns (in points)
                     columns = [35, 355, 455, 513],
                     )
-        
+
         #read csv into dataframe
         data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
-        
+
         #replace "nan"
         data = data.fillna('blank')
         #save the pandas df as an array
         data = data.values
         #replace 'blank' cells with None
         data[data == 'blank'] = ""
-        
+
         #find quote number
         index_array = np.where(data == "Quote #:")
-        if index_array[0].size != 0:                       
+        if index_array[0].size != 0:
             row_index = index_array[0][0]
             col_index = index_array[1][0]
             quote_number = data[row_index][col_index + 1]
         else:
             quote_number = None
-        
+
         #get the row indexes of the headers
         headers = np.where(data == 'QTY')[0]
         #delete the extra headers
         for i in range(1,len(headers)):
             headers[i] = headers[i] - (i - 1)
             data = np.delete(data, headers[i], 0)
-        
+
         #delete or combine unnecessary rows
         i = headers[0] + 1
         while i < len(data[:,0]):
@@ -334,11 +334,11 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                 data = np.delete(data, i, 0)
                 continue
             i += 1
-        
+
         #save the array as a csv
         data = pd.DataFrame(data = data)
         data.to_csv(filename, index = False, header = None)
-        
+
         return quote_number
 
 # accepts xls and xlsx files and their paths and converts to csv file
@@ -385,7 +385,13 @@ def convert_xls_xlsx_to_csv(filename, filepath):
 
 # accepts html file and it's filepath and converts to csv
 def convert_html_to_csv(filename, filepath):
-    html = open(filepath).read()
+    # error handling for file opening
+    try:
+        # open file
+        html = open(filepath).read()
+    except FileNotFoundError:
+        print("HTML File Not Found")
+        return "error"
     # use html.parser argument instead of lxml
     soup = BeautifulSoup(html, 'html.parser')
     # get all tables in html doc
@@ -511,7 +517,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         description_blacklist = ['Total in USD (Tax not included)', 'Proposal Summary', 'Hardware Summary', 'Software Summary', 'Services Summary', 'Prepaid SW Maintenance Summary', 'Total Products and Services (USD)', 'Total Price (USD)']
         # list of text that needs to be filtered out but doesn't stop iterating the loop
         part_continue_list = ['Hardware:', 'Services:', 'Software:']
-
+        # list of text that needs to be filtered out but doesn't stop iterating the loop
         description_continue_list = ['Hardware Sub-total', 'Hardware Wty and Maint Sub-total', 'Software Sub-total', 'Software Wty and Maint Sub-total', 'Services Sub-total', 'PROSUPPORT PLUS 4HR/MC SOFTWARE SUPPORT', 'Prepaid SW Maintenance Sub-total', 'Configuration Total']
         #creates CSV dictionary writer
         csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
@@ -519,18 +525,12 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
 
         # iterates through rows of csv_reader dictionary object
         for i, row in enumerate(csv_reader):
-            # items is a counter for parts with a description field (doesn't work for every quote)
-            #if row[description_name]:
-            #   items += 1
-            # if the iterator is greater than or equal to the items counter, stop iterating
-            # if i >= (items):
-                # break
-
             # terminates when rows are not populated by part #, description and quantity
             if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
                 print("row doesn't have part #, description, or quantity")
                 continue
 
+            # We should just 'continue' here and add to blacklist
             # terminates with incorrect part #
             if row[part_name] in part_blacklist:
                 print("found blacklisted item, stopping loop")
@@ -554,6 +554,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             #initializes empty dictionary to add keys-value pairs into
             output_dictionary = {}
             # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry.
+
             # updates Part #
             if part_name is not None:
                 output_dictionary.update({'Part #':row[part_name]})
@@ -591,7 +592,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
             else:
                 output_dictionary.update({'Vendor Quote #':None})
-
             #updates additional description and vendor fields
             if add_description_name is not None:
                 output_dictionary.update({'Additional Description':row[add_description_name], 'Vendor':vendorname})
@@ -777,6 +777,7 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
+csv_avt('QUO-3118761-G1H9L1-0.xlsx', 'quotes/QUO-3118761-G1H9L1-0.xlsx', "test", "test")
 # csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'MODTECH SOLUTIONS LLC', "test")
