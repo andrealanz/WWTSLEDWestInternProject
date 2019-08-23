@@ -441,8 +441,12 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
         # invalid part numbers | stops iterating the loop
         part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total']
+        # invalid description | stops iterating the loop
+        description_blacklist = ['Total in USD (Tax not included)', 'Proposal Summary', 'Hardware Summary', 'Software Summary', 'Services Summary', 'Prepaid SW Maintenance Summary', 'Total Products and Services (USD)', 'Total Price (USD)']
         # list of text that needs to be filtered out but doesn't stop iterating the loop
-        blacklist_continue_list = ['Hardware:', 'Services:', 'Software:']
+        part_continue_list = ['Hardware:', 'Services:', 'Software:']
+
+        description_continue_list = ['Hardware Sub-total', 'Hardware Wty and Maint Sub-total', 'Software Sub-total', 'Software Wty and Maint Sub-total', 'Services Sub-total', 'PROSUPPORT PLUS 4HR/MC SOFTWARE SUPPORT', 'Prepaid SW Maintenance Sub-total', 'Configuration Total']
         #creates CSV dictionary writer
         csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
         csv_writer.writeheader()
@@ -455,19 +459,29 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             # if the iterator is greater than or equal to the items counter, stop iterating
             # if i >= (items):
                 # break
-
+            # print(row)
             # terminates when rows are not populated by part #, description and quantity
             if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
                 print("row doesn't have part #, description, or quantity")
-                break
+                continue
 
             # terminates with incorrect part #
             if row[part_name] in part_blacklist:
                 print("found blacklisted item, stopping loop")
                 break
 
+            # terminates with incorrect description
+            if row[description_name] in description_blacklist:
+                print("found blacklisted item, stopping loop")
+                break
+
             # skips line with certain strings
-            if row[part_name] in blacklist_continue_list:
+            if row[part_name] in part_continue_list:
+                print("filtered out blacklisted item")
+                continue
+
+            # skips line with certain strings
+            if row[description_name] in description_continue_list:
                 print("filtered out blacklisted item")
                 continue
 
@@ -687,14 +701,13 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
 # csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
-# csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('06062019-WWT-Hawaii Medical Service Association[1].xls', 'quotes/06062019-WWT-Hawaii Medical Service Association[1].xls', "test", "test")
 # csv_avt('PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', 'quotes/PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', "test", "test")
 # csv_avt('PAN_Brigham Young University-Hawaii_0020724391.xls', 'quotes/PAN_Brigham Young University-Hawaii_0020724391.xls', "test", "test")
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
-# csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
+csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('1334-RSKOQ1063-WWT SEWP CPF.pdf', 'quotes/1334-RSKOQ1063-WWT SEWP CPF.pdf', 'MODTECH SOLUTIONS LLC', "test")
