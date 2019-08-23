@@ -127,14 +127,14 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         return quote_number
 
     elif vendorname == 'CARAHSOFT' or vendorname =='CARAHSOFT TECHNOLOGY CORP.'or vendorname == 'CARAHSOFT TECHNOLOGY CORPORATION':
-         #convert pdf into rough csv
+        #convert pdf into rough csv
         tabula.convert_into(filepath, filename,
                     output_format = "csv",
                     pages = '1-' + str(num_pages),
                     lattice = False,
                     stream = True,
                     guess = False,
-                    #x coords for modtech columns (in points)
+                    #x coords for carahsoft columns (in points)
                     columns = [35, 125, 310, 375, 450, 500]
                     )
 
@@ -159,9 +159,13 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data[headers[0]] = true_header
 
         #find quote number
-        row_index = np.where(data == "QUOTE NO")[0][0]
-        col_index = np.where(data == "QUOTE NO")[1][0]
-        quote_number = data[row_index][col_index + 2]  + data[row_index][col_index + 3]
+        index_array = np.where(data == "QUOTE NO")
+        if index_array[0].size != 0:
+            row_index = index_array[0][0]
+            col_index = index_array[1][0]
+            quote_number = data[row_index][col_index + 2]  + data[row_index][col_index + 3]
+        else:
+            quote_number = None
 
         #delete or combine unnecessary rows
         i = headers[0] + 1
@@ -193,14 +197,14 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data.to_csv(filename, index = False, header = None)
 
         return quote_number
-
+    
     elif vendorname == 'TECH DATA':
         #remove watermark
         wm_text = 'For Budgetary Purposes Only'
         inputFile = filepath
         outputFile = 'output.pdf'
-        removeWatermark(wm_text, inputFile, outputFile)
-
+        removeWatermark(wm_text, inputFile, outputFile)   
+        
         #convert pdf into rough csv
         tabula.convert_into(outputFile, filename,
                     output_format = "csv",
@@ -208,7 +212,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     lattice = False,
                     stream = True,
                     guess = False,
-                    #x coords for modtech columns (in points)
+                    #x coords for tech data columns (in points)
                     columns = [72, 207, 261, 383, 436, 520],
                     )
         #delete output.pdf
@@ -216,18 +220,18 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
 
         #read csv into dataframe
         data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
-
+        
         #replace "nan"
         data = data.fillna('blank')
         #save the pandas df as an array
         data = data.values
         #replace 'blank' cells with None
         data[data == 'blank'] = ""
-
+        
         #get quote number
         first_line = "".join(data[0])
         quote_number = first_line.replace("Price Quotation", "")
-
+        
         #define header
         true_header = ["Part Number", "Product Description", "Ext. Qty", "Unit List Price", "Disc%", "Unit Net Price", "Ext. Net Price"]
         #get the row indexes of the headers
@@ -238,7 +242,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
             data = np.delete(data, headers[i], 0)
         #replace header
         data[headers[0]] = true_header
-
+        
         #delete or combine unnecessary rows
         blacklist = ['Software', 'Services', 'Hardware', 'Estimat', 'Net Gra', 'Terms and C', 'This quote is pr', 'be used as the']
         i = headers[0] + 1
@@ -266,13 +270,75 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     data[i-1][1] = data[i-1][1] + ' ' + data[i][1]
                 #delete row
                 data = np.delete(data, i, 0)
-                continue
+                continue 
             i += 1
-
+        
         #save the array as a csv
         data = pd.DataFrame(data = data)
         data.to_csv(filename, index = False, header = None)
-
+        
+        return quote_number
+    
+    elif vendorname == 'DIAGENIX CORPORATION':
+        #convert pdf into rough csv
+        tabula.convert_into(filepath, filename,
+                    output_format = "csv",
+                    pages = '1-' + str(num_pages - 1),
+                    lattice = False,
+                    stream = True,
+                    guess = False,
+                    #x coords for diagenix columns (in points)
+                    columns = [35, 355, 455, 513],
+                    )
+        
+        #read csv into dataframe
+        data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
+        
+        #replace "nan"
+        data = data.fillna('blank')
+        #save the pandas df as an array
+        data = data.values
+        #replace 'blank' cells with None
+        data[data == 'blank'] = ""
+        
+        #find quote number
+        index_array = np.where(data == "Quote #:")
+        if index_array[0].size != 0:                       
+            row_index = index_array[0][0]
+            col_index = index_array[1][0]
+            quote_number = data[row_index][col_index + 1]
+        else:
+            quote_number = None
+        
+        #get the row indexes of the headers
+        headers = np.where(data == 'QTY')[0]
+        #delete the extra headers
+        for i in range(1,len(headers)):
+            headers[i] = headers[i] - (i - 1)
+            data = np.delete(data, headers[i], 0)
+        
+        #delete or combine unnecessary rows
+        i = headers[0] + 1
+        while i < len(data[:,0]):
+            #handle doubled row description
+            if i - 1 > headers[0] and data[i][0] == '' and data[i][1] != '':
+                if data[i][1][0] == '-':
+                    data[i-1][1] = data[i-1][1] + " " + data[i][1]
+                    data = np.delete(data, i, 0)
+                    continue
+            #handle invalid rows
+            if data[i][0] == '' and data[i][1] != '':
+                data = np.delete(data, i, 0)
+                continue
+            if data[i][0] == '' and data[i][1] == '':
+                data = np.delete(data, i, 0)
+                continue
+            i += 1
+        
+        #save the array as a csv
+        data = pd.DataFrame(data = data)
+        data.to_csv(filename, index = False, header = None)
+        
         return quote_number
 
 # accepts xls and xlsx files and their paths and converts to csv file
@@ -346,7 +412,7 @@ def convert_html_to_csv(filename, filepath):
 
 # driver function that calls helper functions to convert csv to csv's in requested WWT format
 def csv_avt(filename,filepath,vendorname,manufacturername):
-    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION', 'TECH DATA']
+    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION', 'TECH DATA', 'DIAGENIX CORPORATION']
     #variable for vendor quote number found in lines outside of table
     vendor_quote_found = None
 
@@ -712,7 +778,7 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('1334-RSKOQ1063-WWT SEWP CPF.pdf', 'quotes/1334-RSKOQ1063-WWT SEWP CPF.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', 'quotes/Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', "CARAHSOFT", "test")
-
+# csv_avt('DGX_209_QV072919_01.pdf', 'quotes/DGX_209_QV072919_01.pdf', 'DIAGENIX CORPORATION', "test")
 
 # ***************** TEMP UNIT TESTS (BAD) *****************
 # csv_avt('test.xlsx', 'quotes/test.xlsx', "test", "test")

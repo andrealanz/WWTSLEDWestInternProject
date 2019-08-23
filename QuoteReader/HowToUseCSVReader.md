@@ -23,6 +23,9 @@ NetApp | CSV
 GB     | CSV
 Arrow  | XLS
 Ingram | XLSX
+DellEMC | XLSX
 ModTech| PDF
 Carahsoft | PDF
 Tech Data | PDF
+Diagenix | PDF
+
