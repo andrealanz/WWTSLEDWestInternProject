@@ -707,7 +707,7 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
-csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
+# csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('1334-RSKOQ1063-WWT SEWP CPF.pdf', 'quotes/1334-RSKOQ1063-WWT SEWP CPF.pdf', 'MODTECH SOLUTIONS LLC', "test")
