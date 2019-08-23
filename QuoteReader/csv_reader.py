@@ -18,7 +18,7 @@ import numpy as np
 
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
-    good_file = [".xls", ".xlsx"]
+    good_file = [".xls", ".xlsx", ".XLS", ".XLSX"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
@@ -30,22 +30,24 @@ def is_xls_xlsx(file):
 
 # function that checks to see if the file passed in is of type .html
 def is_html(file):
+    good_file = [".html", ".HTML"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
      # if the file extension is something other than html, return false
-    if ext != '.html':
+    if ext not in good_file:
         return False
     # otherwise, return true! file is html
     return True
 
 # function that checks to see if the file passed in is of type .pdf
 def is_pdf(file):
+    good_file = [".pdf", ".PDF"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
      # if the file extension is something other than pdf, return false
-    if ext != '.pdf':
+    if ext not in good_file:
         return False
     # otherwise, return true! file is pdf
     return True
@@ -191,14 +193,14 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data.to_csv(filename, index = False, header = None)
 
         return quote_number
-    
+
     elif vendorname == 'TECH DATA':
         #remove watermark
         wm_text = 'For Budgetary Purposes Only'
         inputFile = filepath
         outputFile = 'output.pdf'
-        removeWatermark(wm_text, inputFile, outputFile)   
-        
+        removeWatermark(wm_text, inputFile, outputFile)
+
         #convert pdf into rough csv
         tabula.convert_into(outputFile, filename,
                     output_format = "csv",
@@ -214,18 +216,18 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
 
         #read csv into dataframe
         data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
-        
+
         #replace "nan"
         data = data.fillna('blank')
         #save the pandas df as an array
         data = data.values
         #replace 'blank' cells with None
         data[data == 'blank'] = ""
-        
+
         #get quote number
         first_line = "".join(data[0])
         quote_number = first_line.replace("Price Quotation", "")
-        
+
         #define header
         true_header = ["Part Number", "Product Description", "Ext. Qty", "Unit List Price", "Disc%", "Unit Net Price", "Ext. Net Price"]
         #get the row indexes of the headers
@@ -236,7 +238,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
             data = np.delete(data, headers[i], 0)
         #replace header
         data[headers[0]] = true_header
-        
+
         #delete or combine unnecessary rows
         blacklist = ['Software', 'Services', 'Hardware', 'Estimat', 'Net Gra', 'Terms and C', 'This quote is pr', 'be used as the']
         i = headers[0] + 1
@@ -264,13 +266,13 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
                     data[i-1][1] = data[i-1][1] + ' ' + data[i][1]
                 #delete row
                 data = np.delete(data, i, 0)
-                continue 
+                continue
             i += 1
-        
+
         #save the array as a csv
         data = pd.DataFrame(data = data)
         data.to_csv(filename, index = False, header = None)
-        
+
         return quote_number
 
 # accepts xls and xlsx files and their paths and converts to csv file
@@ -279,8 +281,13 @@ def convert_xls_xlsx_to_csv(filename, filepath):
     good_sheets = []
     # list of sheets that we don't want to convert
     bad_sheets = ['T&C', 'XDO_METADATA'];
-    # open file
-    wb = xlrd.open_workbook(filepath)
+    # error handling for file opening
+    try:
+        # open file
+        wb = xlrd.open_workbook(filepath)
+    except FileNotFoundError:
+        print("XLS/XLSX File Not Found")
+        return "error"
     # get all possible sheet names (could be more than 1)
     sheets = wb.sheet_names()
 
@@ -377,139 +384,145 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     items = 0
 
     # opens input file
-    with open(filepath, encoding='utf-8-sig', errors="ignore") as csv_file:
+    try:
+        csv_file = open(filepath, encoding='utf-8-sig', errors="ignore")
+    except FileNotFoundError:
+        print("File Not Found")
+        return "File Not Found"
+    csv_reader = csv.DictReader(csv_file)
+
+    #get fieldnames
+    try:
+        csv_reader.fieldnames
+    except UnicodeDecodeError:
+        print("Invalid header")
+        return "Invalid header"
+    # except:
+    #     return "Error"
+
+    #delete unnecessary rows (check if second fieldname is blank)
+    while True:
+        count = 0
+        col_names = csv_reader.fieldnames
+        if col_names[0] != "":
+            # case-desensitizes and removes punctuation
+            for fieldname in csv_reader.fieldnames:
+                fieldname = fieldname.lower()
+                fieldname = fieldname.translate(str.maketrans('','',".,"))
+                fieldname = fieldname.replace("\n","")
+                fieldname = fieldname.replace(" ","")
+                csv_reader.fieldnames[count] = fieldname
+                count += 1
+            #check if valid header found
+            if part_finder(csv_reader) is not None:
+                break
+            #handle if vendor quote number found outside of table
+            elif vendor_quote_found == None:
+                for field in col_names:
+                    if str_vendorquote_finder(field) != None:
+                        vendor_quote_found = str_vendorquote_finder(field).upper()
+
         csv_reader = csv.DictReader(csv_file)
 
-        #get fieldnames
-        try:
-            csv_reader.fieldnames
-        except UnicodeDecodeError:
-            print("Invalid header")
-            return "Invalid header"
-
-        #delete unnecessary rows (check if second fieldname is blank)
-        while True:
-            count = 0
-            col_names = csv_reader.fieldnames
-            if col_names[0] != "":
-                # case-desensitizes and removes punctuation
-                for fieldname in csv_reader.fieldnames:
-                    fieldname = fieldname.lower()
-                    fieldname = fieldname.translate(str.maketrans('','',".,"))
-                    fieldname = fieldname.replace("\n","")
-                    fieldname = fieldname.replace(" ","")
-                    csv_reader.fieldnames[count] = fieldname
-                    count += 1
-                #check if valid header found
-                if part_finder(csv_reader) is not None:
-                    break
-                #handle if vendor quote number found outside of table
-                elif vendor_quote_found == None:
-                    for field in col_names:
-                        if str_vendorquote_finder(field) != None:
-                            vendor_quote_found = str_vendorquote_finder(field).upper()
-
-            csv_reader = csv.DictReader(csv_file)
-
-        # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
-        part_name = part_finder(csv_reader)
-        description_name = description_finder(csv_reader)
-        listprice_name = listprice_finder(csv_reader)
-        wwtcost_name = wwtprice_finder(csv_reader)
-        quantity_name = quantity_finder(csv_reader)
-        manufacturer_name = manufacturer_finder(csv_reader)
-        vendorquote_name = vendorquote_finder(csv_reader)
-        add_description_name = add_description_finder(csv_reader)
+    # calls helper functions to find header variations and saves as variable to pass into as dictionary keys
+    part_name = part_finder(csv_reader)
+    description_name = description_finder(csv_reader)
+    listprice_name = listprice_finder(csv_reader)
+    wwtcost_name = wwtprice_finder(csv_reader)
+    quantity_name = quantity_finder(csv_reader)
+    manufacturer_name = manufacturer_finder(csv_reader)
+    vendorquote_name = vendorquote_finder(csv_reader)
+    add_description_name = add_description_finder(csv_reader)
 
 
-        # writes into a new file
-        with open('wwt_'  + filename, mode='w' ,newline='', encoding='utf-8') as wwt_file:
-            # headers for wwt quote template
-            headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
-            # invalid part numbers | stops iterating the loop
-            part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total']
-            # list of text that needs to be filtered out but doesn't stop iterating the loop
-            blacklist_continue_list = ['Hardware:', 'Services:', 'Software:']
-            #creates CSV dictionary writer
-            csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
-            csv_writer.writeheader()
+    # writes into a new file
+    with open('wwt_'  + filename, mode='w' ,newline='', encoding='utf-8') as wwt_file:
+        # headers for wwt quote template
+        headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
+        # invalid part numbers | stops iterating the loop
+        part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total']
+        # list of text that needs to be filtered out but doesn't stop iterating the loop
+        blacklist_continue_list = ['Hardware:', 'Services:', 'Software:']
+        #creates CSV dictionary writer
+        csv_writer=csv.DictWriter(wwt_file, fieldnames=headers)
+        csv_writer.writeheader()
 
-            # iterates through rows of csv_reader dictionary object
-            for i, row in enumerate(csv_reader):
-                # items is a counter for parts with a description field (doesn't work for every quote)
-                #if row[description_name]:
-                #   items += 1
-                # if the iterator is greater than or equal to the items counter, stop iterating
-                # if i >= (items):
-                    # break
+        # iterates through rows of csv_reader dictionary object
+        for i, row in enumerate(csv_reader):
+            # items is a counter for parts with a description field (doesn't work for every quote)
+            #if row[description_name]:
+            #   items += 1
+            # if the iterator is greater than or equal to the items counter, stop iterating
+            # if i >= (items):
+                # break
 
-                # terminates when rows are not populated by part #, description and quantity
-                if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
-                    print("row doesn't have part #, description, or quantity")
-                    break
+            # terminates when rows are not populated by part #, description and quantity
+            if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
+                print("row doesn't have part #, description, or quantity")
+                break
 
-                # terminates with incorrect part #
-                if row[part_name] in part_blacklist:
-                    print("found blacklisted item, stopping loop")
-                    break
+            # terminates with incorrect part #
+            if row[part_name] in part_blacklist:
+                print("found blacklisted item, stopping loop")
+                break
 
-                # skips line with certain strings
-                if row[part_name] in blacklist_continue_list:
-                    print("filtered out blacklisted item")
-                    continue
+            # skips line with certain strings
+            if row[part_name] in blacklist_continue_list:
+                print("filtered out blacklisted item")
+                continue
 
-                #initializes empty dictionary to add keys-value pairs into
-                output_dictionary = {}
-                # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry.
-                # updates Part #
-                if part_name is not None:
-                    output_dictionary.update({'Part #':row[part_name]})
-                else:
-                    output_dictionary.update({'Part #':None})
-                #updates Description
-                if description_name is not None:
-                    output_dictionary.update({'Description':row[description_name]})
-                else:
-                    output_dictionary.update({'Description':None})
-                # updates List Price
-                if listprice_name is not None:
-                    output_dictionary.update({'List Price':row[listprice_name]})
-                else:
-                    output_dictionary.update({'List Price':None})
-                # updates WWT Cost
-                if wwtcost_name is not None:
-                    output_dictionary.update({'WWT Cost':row[wwtcost_name]})
-                else:
-                    output_dictionary.update({'WWT Cost':None})
-                # updates Qty
-                if quantity_name is not None:
-                    output_dictionary.update({'Qty':row[quantity_name]})
-                else:
-                    output_dictionary.update({'Description':None})
-                # updates Manufacturer
-                if manufacturer_name is not None:
-                    output_dictionary.update({'Manufacturer':row[manufacturer_name]})
-                else:
-                    output_dictionary.update({'Manufacturer':manufacturername})
-                # updates Vendor Quote #
-                if vendor_quote_found != None:
-                    output_dictionary.update({'Vendor Quote #':vendor_quote_found})
-                elif vendorquote_name is not None:
-                    output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
-                else:
-                    output_dictionary.update({'Vendor Quote #':None})
+            #initializes empty dictionary to add keys-value pairs into
+            output_dictionary = {}
+            # Updates individual columns for each row into dictionary. If the column does not exist on original input file, leaves blank entry.
+            # updates Part #
+            if part_name is not None:
+                output_dictionary.update({'Part #':row[part_name]})
+            else:
+                output_dictionary.update({'Part #':None})
+            #updates Description
+            if description_name is not None:
+                output_dictionary.update({'Description':row[description_name]})
+            else:
+                output_dictionary.update({'Description':None})
+            # updates List Price
+            if listprice_name is not None:
+                output_dictionary.update({'List Price':row[listprice_name]})
+            else:
+                output_dictionary.update({'List Price':None})
+            # updates WWT Cost
+            if wwtcost_name is not None:
+                output_dictionary.update({'WWT Cost':row[wwtcost_name]})
+            else:
+                output_dictionary.update({'WWT Cost':None})
+            # updates Qty
+            if quantity_name is not None:
+                output_dictionary.update({'Qty':row[quantity_name]})
+            else:
+                output_dictionary.update({'Description':None})
+            # updates Manufacturer
+            if manufacturer_name is not None:
+                output_dictionary.update({'Manufacturer':row[manufacturer_name]})
+            else:
+                output_dictionary.update({'Manufacturer':manufacturername})
+            # updates Vendor Quote #
+            if vendor_quote_found != None:
+                output_dictionary.update({'Vendor Quote #':vendor_quote_found})
+            elif vendorquote_name is not None:
+                output_dictionary.update({'Vendor Quote #':row[vendorquote_name]})
+            else:
+                output_dictionary.update({'Vendor Quote #':None})
 
-                #updates additional description and vendor fields
-                if add_description_name is not None:
-                    output_dictionary.update({'Additional Description':row[add_description_name], 'Vendor':vendorname})
-                else:
-                    output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
+            #updates additional description and vendor fields
+            if add_description_name is not None:
+                output_dictionary.update({'Additional Description':row[add_description_name], 'Vendor':vendorname})
+            else:
+                output_dictionary.update({'Additional Description':None, 'Vendor':vendorname})
 
-                csv_writer.writerow(output_dictionary)
+            csv_writer.writerow(output_dictionary)
+
 
 
 # Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
-
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
         part_name = 'partnumber'
@@ -670,8 +683,8 @@ def removeWatermark(wm_text, inputFile, outputFile):
 
 
 
-# ***************** TEMP UNIT TESTS *****************
-#csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
+# ***************** TEMP UNIT TESTS (GOOD) *****************
+# csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
 # csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
 # csv_avt('061219-WWT-Hawaii Medical Service Association.xls', 'quotes/061219-WWT-Hawaii Medical Service Association.xls', "test", "test")
@@ -681,14 +694,15 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
+# csv_avt('EMC Customer Proposal 6003078183v04.XLSX', 'quotes/EMC Customer Proposal 6003078183v04.XLSX', "test", "test")
 # csv_avt('Quote_748239329.html', 'quotes/Quote_748239329.html', "test", "test")
 # csv_avt('1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'quotes/1313-KPKGQ1054-304th ESB CONF RM VTC UPGRADE WWT.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('1334-RSKOQ1063-WWT SEWP CPF.pdf', 'quotes/1334-RSKOQ1063-WWT SEWP CPF.pdf', 'MODTECH SOLUTIONS LLC', "test")
 # csv_avt('Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', 'quotes/Carahsoft - Nutanix - 07.15.2019 - Quote 16568022.pdf', "CARAHSOFT", "test")
 
 
-# print(convert_xls_xlsx_to_csv('quotes/PAN_Brigham Young University-Hawaii_0020724391.xls'))
-# convert_html_to_csv('Quote_748239329.html', 'quotes/Quote_748239329.html')
+# ***************** TEMP UNIT TESTS (BAD) *****************
+# csv_avt('test.xlsx', 'quotes/test.xlsx', "test", "test")
 
 
 
@@ -702,41 +716,43 @@ def removeWatermark(wm_text, inputFile, outputFile):
 
 # **********CURRENTLY UNUSED**********
 # get an array of all xls and xlsx files
-def get_xls_xlsx_files(filepath):
-    # Get an array of .xls and .xlsx files
-    xls_xlsx_files = []
-    # loop through files ending in .xls
-    for xls_file in glob.glob("*.xls"):
-        # add file name to array
-        xls_xlsx_files.append(xls_file)
-    # loop through files ending in .xls in quotes dir
-    for xls_file in glob.glob(filepath + "/*.xls"):
-        # add file name to array
-        xls_xlsx_files.append(xls_file)
-    # loop through files ending in .xlsx
-    for xlsx_file in glob.glob("*.xlsx"):
-        # add file name to array
-        xls_xlsx_files.append(xlsx_file)
-    # loop through files ending in .xlsx in quotes dir
-    for xlsx_file in glob.glob(filepath + "/*.xlsx"):
-        # add file name to array
-        xls_xlsx_files.append(xlsx_file)
-    return xls_xlsx_files
+
+# def get_xls_xlsx_files(filepath):
+#     # Get an array of .xls and .xlsx files
+#     xls_xlsx_files = []
+#     # loop through files ending in .xls
+#     for xls_file in glob.glob("*.xls"):
+#         # add file name to array
+#         xls_xlsx_files.append(xls_file)
+#     # loop through files ending in .xls in quotes dir
+#     for xls_file in glob.glob(filepath + "/*.xls"):
+#         # add file name to array
+#         xls_xlsx_files.append(xls_file)
+#     # loop through files ending in .xlsx
+#     for xlsx_file in glob.glob("*.xlsx"):
+#         # add file name to array
+#         xls_xlsx_files.append(xlsx_file)
+#     # loop through files ending in .xlsx in quotes dir
+#     for xlsx_file in glob.glob(filepath + "/*.xlsx"):
+#         # add file name to array
+#         xls_xlsx_files.append(xlsx_file)
+#     return xls_xlsx_files
 
 # **********CURRENTLY UNUSED**********
 # Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
-def reformat_header(filename):
-    with open(filename) as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        # print(csv_reader.fieldnames)
-        count = 0
 
-        # iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
-        for fieldname in csv_reader.fieldnames:
-            fieldname = fieldname.lower()
-            fieldname = fieldname.translate(str.maketrans('','',".,"))
-            fieldname = fieldname.replace(" ","")
-            csv_reader.fieldnames[count] = fieldname
-            # print(csv_reader.fieldnames[count])
-            count += 1
-        print(csv_reader.fieldnames)
+# def reformat_header(filename):
+#     with open(filename) as csv_file:
+#         csv_reader = csv.DictReader(csv_file)
+#         # print(csv_reader.fieldnames)
+#         count = 0
+#
+#         # iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
+#         for fieldname in csv_reader.fieldnames:
+#             fieldname = fieldname.lower()
+#             fieldname = fieldname.translate(str.maketrans('','',".,"))
+#             fieldname = fieldname.replace(" ","")
+#             csv_reader.fieldnames[count] = fieldname
+#             # print(csv_reader.fieldnames[count])
+#             count += 1
+#         print(csv_reader.fieldnames)
