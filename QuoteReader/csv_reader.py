@@ -191,6 +191,87 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         data.to_csv(filename, index = False, header = None)
 
         return quote_number
+    
+    elif vendorname == 'TECH DATA':
+        #remove watermark
+        wm_text = 'For Budgetary Purposes Only'
+        inputFile = filepath
+        outputFile = 'output.pdf'
+        removeWatermark(wm_text, inputFile, outputFile)   
+        
+        #convert pdf into rough csv
+        tabula.convert_into(outputFile, filename,
+                    output_format = "csv",
+                    pages = '1-' + str(num_pages),
+                    lattice = False,
+                    stream = True,
+                    guess = False,
+                    #x coords for modtech columns (in points)
+                    columns = [72, 207, 261, 383, 436, 520],
+                    )
+        #delete output.pdf
+        os.remove(outputFile)
+
+        #read csv into dataframe
+        data = pd.read_csv(filename, encoding = "ISO-8859-1", dtype = str)
+        
+        #replace "nan"
+        data = data.fillna('blank')
+        #save the pandas df as an array
+        data = data.values
+        #replace 'blank' cells with None
+        data[data == 'blank'] = ""
+        
+        #get quote number
+        first_line = "".join(data[0])
+        quote_number = first_line.replace("Price Quotation", "")
+        
+        #define header
+        true_header = ["Part Number", "Product Description", "Ext. Qty", "Unit List Price", "Disc%", "Unit Net Price", "Ext. Net Price"]
+        #get the row indexes of the headers
+        headers = np.where(data == 'Part Number')[0]
+        #delete the extra headers
+        for i in range(1,len(headers)):
+            headers[i] = headers[i] - (i - 1)
+            data = np.delete(data, headers[i], 0)
+        #replace header
+        data[headers[0]] = true_header
+        
+        #delete or combine unnecessary rows
+        blacklist = ['Software', 'Services', 'Hardware', 'Estimat', 'Net Gra', 'Terms and C', 'This quote is pr', 'be used as the']
+        i = headers[0] + 1
+        while i < len(data[:,0]):
+            #handle non-part rows
+            if data[i][0] in blacklist:
+                data = np.delete(data, i, 0)
+                continue
+            if data[i][0] == '' and data[i][1] == '':
+                data = np.delete(data, i, 0)
+                continue
+            if data[i][0] == '' and (data[i][2] != '' or data[i][3] != ''):
+                data = np.delete(data, i, 0)
+                continue
+            if data[i][0] != '' and data[i][6] != '' and data[i][5] == '':
+                data = np.delete(data, i, 0)
+                continue
+            #handle when combining rows
+            if i - 1 > headers[0] and data[i][2] == '':
+                #handle doubled part number
+                if data[i][0] != '':
+                    data[i-1][0] = data[i-1][0] + data[i][0]
+                #handle doubled description
+                if data[i][1] != '':
+                    data[i-1][1] = data[i-1][1] + ' ' + data[i][1]
+                #delete row
+                data = np.delete(data, i, 0)
+                continue 
+            i += 1
+        
+        #save the array as a csv
+        data = pd.DataFrame(data = data)
+        data.to_csv(filename, index = False, header = None)
+        
+        return quote_number
 
 # accepts xls and xlsx files and their paths and converts to csv file
 def convert_xls_xlsx_to_csv(filename, filepath):
@@ -258,7 +339,7 @@ def convert_html_to_csv(filename, filepath):
 
 # driver function that calls helper functions to convert csv to csv's in requested WWT format
 def csv_avt(filename,filepath,vendorname,manufacturername):
-    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION']
+    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION', 'TECH DATA']
     #variable for vendor quote number found in lines outside of table
     vendor_quote_found = None
 
@@ -558,6 +639,34 @@ def add_description_finder(csv_dict):
         print('Additional Description fieldname not found.')
         return None
 
+#the following function was found at: https://stackoverflow.com/questions/37752604/watermark-removal-on-pdf-with-pypdf2
+def removeWatermark(wm_text, inputFile, outputFile):
+    from PyPDF4 import PdfFileReader, PdfFileWriter
+    from PyPDF4.pdf import ContentStream
+    from PyPDF4.generic import TextStringObject, NameObject
+    from PyPDF4.utils import b_
+
+    with open(inputFile, "rb") as f:
+        source = PdfFileReader(f, "rb")
+        output = PdfFileWriter()
+
+        for page in range(source.getNumPages()):
+            page = source.getPage(page)
+            content_object = page["/Contents"].getObject()
+            content = ContentStream(content_object, source)
+
+            for operands, operator in content.operations:
+                if operator == b_("Tj"):
+                    text = operands[0]
+
+                    if isinstance(text, str) and text.startswith(wm_text):
+                        operands[0] = TextStringObject('')
+
+            page.__setitem__(NameObject('/Contents'), content)
+            output.addPage(page)
+
+        with open(outputFile, "wb") as outputStream:
+            output.write(outputStream)
 
 
 

@@ -25,3 +25,4 @@ Arrow  | XLS
 Ingram | XLSX
 ModTech| PDF
 Carahsoft | PDF
+Tech Data | PDF
