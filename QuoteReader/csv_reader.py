@@ -52,7 +52,10 @@ def is_pdf(file):
     # otherwise, return true! file is pdf
     return True
 
-# accepts pdf ModTech quotes and their paths and converts to csv file, returns the quote number
+# function that accepts a pdf filename (e.g. file.pdf), filepath, and vendor name, converts it to 
+# csv in the current directory and returns the quote number 
+# (Note that only ModTech, Carahsoft, Tech Data, and Diagenix pdfs are supported at the moment)
+
 def convert_pdf_to_csv(filename, filepath, vendorname):
     #read in pdf to get number of pages
     reader = PyPDF2.PdfFileReader(open(filepath, mode='rb'))
