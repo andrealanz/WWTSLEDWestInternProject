@@ -427,10 +427,14 @@ def convert_html_to_csv(filename, filepath):
 
 # driver function that calls helper functions to convert csv to csv's in requested WWT format
 def csv_avt(filename,filepath,vendorname,manufacturername):
-    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT', 'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION', 'TECH DATA', 'DIAGENIX CORPORATION']
+    #  list of vendors that currently work with the program
+    possible_vendors = ['MODTECH SOLUTIONS LLC', 'CARAHSOFT',
+    'CARAHSOFT TECHNOLOGY CORP.', 'CARAHSOFT TECHNOLOGY CORPORATION',
+    'TECH DATA', 'DIAGENIX CORPORATION']
     #variable for vendor quote number found in lines outside of table
     vendor_quote_found = None
 
+    # first, if the file type is not csv, convert to csv
     # check to see if the file type is .xls, .xlsx
     if is_xls_xlsx(filename) == True:
         # if the file is .xls, .xlsx
@@ -452,17 +456,6 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         vendor_quote_found = convert_pdf_to_csv(filename, filepath, vendorname)
         filepath = filename.replace(".pdf", ".csv")
         filename = filepath
-
-    # loop through csv sheet file array (only loops if there's multiple sheets) *****NOT WOKRING ON FRONT END SO LEAVE COMMENTED
-    # for file in new_filepath:
-    # update new filepath (from .xls, .xlsx to .csv)
-    # filepath = new_filepath
-    # head, sep, tail = new_filepath.partition('/')
-    # filter out the directory name and just get file name
-    # filename = tail
-
-    # counter for total parts in the quote
-    items = 0
 
     # opens input file
     try:
@@ -543,7 +536,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                 print("row doesn't have part #, description, or quantity")
                 continue
 
-            # We should just 'continue' here and add to blacklist
+            # We should just 'continue' here and add keywords to blacklist ???
             # terminates with incorrect part #
             if row[part_name] in part_blacklist:
                 print("found blacklisted item, stopping loop")
@@ -614,7 +607,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
             csv_writer.writerow(output_dictionary)
 
 
-
+# dictionary keywords
+# add new keywords if new vendor quotes have different headers (should be lowercase, no whitespace)
 # Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
@@ -809,7 +803,6 @@ def removeWatermark(wm_text, inputFile, outputFile):
 
 
 
-
 # additional code for possible future use:
 
 # **********CURRENTLY UNUSED**********
@@ -836,22 +829,3 @@ def removeWatermark(wm_text, inputFile, outputFile):
 #         # add file name to array
 #         xls_xlsx_files.append(xlsx_file)
 #     return xls_xlsx_files
-
-# **********CURRENTLY UNUSED**********
-
-# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
-# def reformat_header(filename):
-#     with open(filename) as csv_file:
-#         csv_reader = csv.DictReader(csv_file)
-#         # print(csv_reader.fieldnames)
-#         count = 0
-#
-#         # iterates through all fieldnames and makes case insensitive, removes punctuation and spaces except hashtags(#)
-#         for fieldname in csv_reader.fieldnames:
-#             fieldname = fieldname.lower()
-#             fieldname = fieldname.translate(str.maketrans('','',".,"))
-#             fieldname = fieldname.replace(" ","")
-#             csv_reader.fieldnames[count] = fieldname
-#             # print(csv_reader.fieldnames[count])
-#             count += 1
-#         print(csv_reader.fieldnames)
