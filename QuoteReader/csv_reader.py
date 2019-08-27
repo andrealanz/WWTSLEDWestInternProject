@@ -1,13 +1,11 @@
-import os
-import csv
+import os # used to remove file in "convert_pdf_to_csv"
+import csv # used to read and write csv files
 import string
-import xlrd
-import glob
-from bs4 import BeautifulSoup
-import tabula
-import PyPDF2
-import pandas as pd
-import numpy as np
+import tabula # used in "convert_pdf_to_csv" func to convert pdf to rough csv
+import PyPDF2 # used in "convert_pdf_to_csv" func to read pdf
+import pandas as pd # used in "convert_pdf_to_csv" func to clean up rough csv
+import numpy as np # used in "convert_pdf_to_csv" func to help clean up rough csv
+
 
 # Description: This program takes in sales quotes of different file types (.csv, .xls, .xlsx, or .pdf) and normalizes the data into a .csv file according to a WWT format
 # Authors: 2019 WWT Interns (Andrea Lanz, Jeremiah Kramer, Sally Maeda, Patrick Rhee, Justin Tokuda)
@@ -16,12 +14,15 @@ import numpy as np
 # Current version works for just ISR WWT team in Hawaii
 # Version 1.0
 
+
 # function that checks to see if the file passed in is of type .xls/.xlsx
 def is_xls_xlsx(file):
-    good_file = [".xls", ".xlsx", ".XLS", ".XLSX"]
+    good_file = [".xls", ".xlsx"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
+    # handle extensions in all caps
+    ext = ext.lower()
      # if the file extension is something other than xls/xlsx, return false
     if ext not in good_file:
         return False
@@ -30,10 +31,12 @@ def is_xls_xlsx(file):
 
 # function that checks to see if the file passed in is of type .html
 def is_html(file):
-    good_file = [".html", ".HTML"]
+    good_file = [".html"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
+    # handle extensions in all caps
+    ext = ext.lower()
      # if the file extension is something other than html, return false
     if ext not in good_file:
         return False
@@ -42,20 +45,21 @@ def is_html(file):
 
 # function that checks to see if the file passed in is of type .pdf
 def is_pdf(file):
-    good_file = [".pdf", ".PDF"]
+    good_file = [".pdf"]
     #get index of last period
     index = file.rfind('.')
     ext = file[index:]
+    # handle extensions in all caps
+    ext = ext.lower()
      # if the file extension is something other than pdf, return false
     if ext not in good_file:
         return False
     # otherwise, return true! file is pdf
     return True
 
-# function that accepts a pdf filename (e.g. file.pdf), filepath, and vendor name, converts it to 
-# csv in the current directory and returns the quote number 
+# function that accepts a pdf filename (e.g. file.pdf), filepath, and vendor name, converts it to
+# csv in the current directory and returns the quote number
 # (Note that only ModTech, Carahsoft, Tech Data, and Diagenix pdfs are supported at the moment)
-
 def convert_pdf_to_csv(filename, filepath, vendorname):
     #read in pdf to get number of pages
     reader = PyPDF2.PdfFileReader(open(filepath, mode='rb'))
@@ -346,6 +350,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
 
 # accepts xls and xlsx files and their paths and converts to csv file
 def convert_xls_xlsx_to_csv(filename, filepath):
+    import xlrd
     # list of good sheet names to return
     good_sheets = []
     # list of sheets that we don't want to convert
@@ -357,7 +362,7 @@ def convert_xls_xlsx_to_csv(filename, filepath):
     except FileNotFoundError:
         print("XLS/XLSX File Not Found")
         return "error"
-    # get all possible sheet names (could be more than 1)
+    # get all psible sheet names (could be more than 1)
     sheets = wb.sheet_names()
 
     # for sheet in sheets: ************ ONLY WITH MULTIPLE SHEETS - DOESN'T WORK ON FRONTEND SO DON'T CONVERT ALL SHEETS
@@ -388,6 +393,7 @@ def convert_xls_xlsx_to_csv(filename, filepath):
 
 # accepts html file and it's filepath and converts to csv
 def convert_html_to_csv(filename, filepath):
+    from bs4 import BeautifulSoup # used in "convert_html_to_csv" func
     # error handling for file opening
     try:
         # open file
@@ -479,23 +485,27 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     while True:
         count = 0
         col_names = csv_reader.fieldnames
-        if col_names[0] != "":
-            # case-desensitizes and removes punctuation
-            for fieldname in csv_reader.fieldnames:
-                fieldname = fieldname.lower()
-                fieldname = fieldname.translate(str.maketrans('','',".,"))
-                fieldname = fieldname.replace("\n","")
-                fieldname = fieldname.replace(" ","")
-                csv_reader.fieldnames[count] = fieldname
-                count += 1
-            #check if valid header found
-            if part_finder(csv_reader) is not None:
-                break
-            #handle if vendor quote number found outside of table
-            elif vendor_quote_found == None:
-                for field in col_names:
-                    if str_vendorquote_finder(field) != None:
-                        vendor_quote_found = str_vendorquote_finder(field).upper()
+        # error handling (mainly for html file type)
+        try:
+            if col_names[0] != "":
+                # case-desensitizes and removes punctuation
+                for fieldname in csv_reader.fieldnames:
+                    fieldname = fieldname.lower()
+                    fieldname = fieldname.translate(str.maketrans('','',".,"))
+                    fieldname = fieldname.replace("\n","")
+                    fieldname = fieldname.replace(" ","")
+                    csv_reader.fieldnames[count] = fieldname
+                    count += 1
+                #check if valid header found
+                if part_finder(csv_reader) is not None:
+                    break
+                #handle if vendor quote number found outside of table
+                elif vendor_quote_found == None:
+                    for field in col_names:
+                        if str_vendorquote_finder(field) != None:
+                            vendor_quote_found = str_vendorquote_finder(field).upper()
+        except IndexError:
+            return "Index Error"
 
         csv_reader = csv.DictReader(csv_file)
 
@@ -770,6 +780,7 @@ def removeWatermark(wm_text, inputFile, outputFile):
 
 
 
+
 # ***************** TEMP UNIT TESTS (GOOD) *****************
 # csv_avt('GBQUOTE.csv', 'quotes/GBQUOTE.csv', "test", "test")
 # csv_avt('NetApp_5807.csv', 'quotes/NetApp_5807.csv', "test", "test")
@@ -802,9 +813,10 @@ def removeWatermark(wm_text, inputFile, outputFile):
 # additional code for possible future use:
 
 # **********CURRENTLY UNUSED**********
-# get an array of all xls and xlsx files
 
+# get an array of all xls and xlsx files in a directory
 # def get_xls_xlsx_files(filepath):
+#     import glob
 #     # Get an array of .xls and .xlsx files
 #     xls_xlsx_files = []
 #     # loop through files ending in .xls
@@ -826,8 +838,8 @@ def removeWatermark(wm_text, inputFile, outputFile):
 #     return xls_xlsx_files
 
 # **********CURRENTLY UNUSED**********
-# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
 
+# Utilizes a CSV dictionary to gather fieldnames and reformats the headers on input file to case-desensitize.
 # def reformat_header(filename):
 #     with open(filename) as csv_file:
 #         csv_reader = csv.DictReader(csv_file)
