@@ -210,7 +210,7 @@ def convert_pdf_to_csv(filename, filepath, vendorname):
         wm_text = 'For Budgetary Purposes Only'
         inputFile = filepath
         outputFile = 'output.pdf'
-        removeWatermark(wm_text, inputFile, outputFile)
+        remove_watermark(wm_text, inputFile, outputFile)
 
         #convert pdf into rough csv
         tabula.convert_into(outputFile, filename,
@@ -457,6 +457,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         filepath = filename.replace(".pdf", ".csv")
         filename = filepath
 
+    # read csv file
     # opens input file
     try:
         csv_file = open(filepath, encoding='utf-8-sig', errors="ignore")
@@ -474,6 +475,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
     # except:
     #     return "Error"
 
+    # filter until a header is found in csv file (keep quote number)
     #delete unnecessary rows (check if second fieldname is blank)
     while True:
         count = 0
@@ -530,6 +532,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         csv_writer.writeheader()
 
         # iterates through rows of csv_reader dictionary object
+        # adds values paired with a ket to an output index_array
+        # and writes array to the row
         for i, row in enumerate(csv_reader):
             # terminates when rows are not populated by part #, description and quantity
             if row[part_name] == '' and row[description_name] == '' and row[quantity_name] == '':
@@ -608,8 +612,10 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
 
 
 # dictionary keywords
-# add new keywords if new vendor quotes have different headers (should be lowercase, no whitespace)
-# Looks for variations of 'Part #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# add new keywords if new vendor quotes have different headers
+# (should be lowercase, no whitespace)
+# Looks for variations of 'Part #' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def part_finder(csv_dict):
     if 'partnumber' in csv_dict.fieldnames:
         part_name = 'partnumber'
@@ -630,7 +636,8 @@ def part_finder(csv_dict):
         return None
     return part_name
 
-# Looks for variations of 'Description' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'Description' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def description_finder(csv_dict):
     if 'product' in csv_dict.fieldnames:
         return 'product'
@@ -644,7 +651,8 @@ def description_finder(csv_dict):
         print('Description fieldname not found.')
         return None
 
-# Looks for variations of 'List Price' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'List Price' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def listprice_finder(csv_dict):
     if 'listprice' in csv_dict.fieldnames:
         return 'listprice'
@@ -660,7 +668,8 @@ def listprice_finder(csv_dict):
         print('Price fieldname not found.')
         return None
 
-# Looks for variations of 'WWT Price' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'WWT Price' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def wwtprice_finder(csv_dict):
     if 'resellernetprice' in csv_dict.fieldnames:
         return 'resellernetprice'
@@ -680,7 +689,8 @@ def wwtprice_finder(csv_dict):
         print('WWT Cost fieldname not found.')
         return None
 
-# Looks for variations of 'Qty' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'Qty' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def quantity_finder(csv_dict):
     if 'qty' in csv_dict.fieldnames:
         return 'qty'
@@ -694,7 +704,8 @@ def quantity_finder(csv_dict):
         print('Quantity fieldname not found.')
         return None
 
-# Looks for variations of 'Manufacturer' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'Manufacturer' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def manufacturer_finder(csv_dict):
     if 'manufacturer' in csv_dict.fieldnames:
         return 'manufacturer'
@@ -704,7 +715,8 @@ def manufacturer_finder(csv_dict):
         print('Manufacturer fieldname not found.')
         return None
 
-# Looks for variations of 'Vendor Quote #' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'Vendor Quote #' fieldnames and returns
+# value found in vendor csv quote. Returns None if no variation is found.
 def vendorquote_finder(csv_dict):
     if 'quotename' in csv_dict.fieldnames:
         return 'quotename'
@@ -724,7 +736,8 @@ def vendorquote_finder(csv_dict):
         print('Vendor Quote # fieldname not found.')
         return None
 
-#Looks for variations of "Vendor Quote #' in lines before dictionary, returns the number as a string. None if no variation found
+#Looks for variations of "Vendor Quote #' in lines before dictionary,
+# returns the number as a string. None if no variation found
 def str_vendorquote_finder(quote_str):
     if 'quote:' in quote_str:
         return quote_str.replace('quote:', "")
@@ -733,7 +746,8 @@ def str_vendorquote_finder(quote_str):
     else:
         return None
 
-# Looks for variations of 'Additional Description' fieldnames and returns value found in vendor csv quote. Returns None if no variation is found.
+# Looks for variations of 'Additional Description' fieldnames
+# and returns value found in vendor csv quote. Returns None if no variation is found.
 def add_description_finder(csv_dict):
     if 'additionaldescription' in csv_dict.fieldnames:
         return 'additionaldescription'
@@ -744,7 +758,7 @@ def add_description_finder(csv_dict):
         return None
 
 #the following function was found at: https://stackoverflow.com/questions/37752604/watermark-removal-on-pdf-with-pypdf2
-def removeWatermark(wm_text, inputFile, outputFile):
+def remove_watermark(wm_text, inputFile, outputFile):
     from PyPDF4 import PdfFileReader, PdfFileWriter
     from PyPDF4.pdf import ContentStream
     from PyPDF4.generic import TextStringObject, NameObject
