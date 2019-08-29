@@ -26,6 +26,6 @@ Ingram | XLSX
 DellEMC | XLSX
 ModTech| PDF
 Carahsoft | PDF
-Tech Data | PDF
+Tech Data | PDF & XLSX
 Diagenix | PDF
 

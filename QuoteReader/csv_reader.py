@@ -668,6 +668,8 @@ def listprice_finder(csv_dict):
         return 'unitlistprice'
     elif 'msrp' in csv_dict.fieldnames:
         return 'msrp'
+    elif 'unitlist' in csv_dict.fieldnames:
+        return 'unitlist'
     else:
         print('Price fieldname not found.')
         return None
