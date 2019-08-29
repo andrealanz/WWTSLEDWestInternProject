@@ -354,7 +354,7 @@ def convert_xls_xlsx_to_csv(filename, filepath):
     # list of good sheet names to return
     good_sheets = []
     # list of sheets that we don't want to convert
-    bad_sheets = ['T&C', 'XDO_METADATA'];
+    bad_sheets = ['T&C', 'XDO_METADATA', "Summary"];
     # error handling for file opening
     try:
         # open file
@@ -365,13 +365,15 @@ def convert_xls_xlsx_to_csv(filename, filepath):
     # get all psible sheet names (could be more than 1)
     sheets = wb.sheet_names()
 
-    # for sheet in sheets: ************ ONLY WITH MULTIPLE SHEETS - DOESN'T WORK ON FRONTEND SO DON'T CONVERT ALL SHEETS
+    for sheet in sheets:
     # check if the sheet is a bad sheet
-    # if sheets[0] in bad_sheets: *********** ONLY WITH MULTIPLE SHEETS
-    #     # skip the sheet if it is
-    #     break
+        if sheet in bad_sheets:
+        #     # skip the sheet if it is
+            continue
+        else:
+            break
     # get specific sheet as a Sheet object (needed for sh.nrows below)
-    sh = wb.sheet_by_name(sheets[0])
+    sh = wb.sheet_by_name(sheet)
     # head is raw file name without its file extension
     head, sep, tail = filename.partition('.')
     # append csv file extension to string
@@ -501,6 +503,8 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
                             vendor_quote_found = str_vendorquote_finder(field).upper()
         except IndexError:
             return "Index Error"
+        except TypeError:
+            return "Type Error"
 
         csv_reader = csv.DictReader(csv_file)
 
@@ -520,7 +524,7 @@ def csv_avt(filename,filepath,vendorname,manufacturername):
         # headers for wwt quote template
         headers = ['Part #', 'Description', 'List Price', 'WWT Cost','Customer Price','Qty','Manufacturer','Vendor','Additional Description', 'Cust Product #', 'Lab Flag (Y/N)', 'Contract Start Date (MM/DD/YYYY)','Contract End Date (MM/DD/YYYY)', 'Serial #', 'Vendor Quote #','Duration','Lead Time', 'Cost Type']
         # invalid part numbers | stops iterating the loop
-        part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total']
+        part_blacklist = ['Products / Services Total', 'Sub-Total', 'Total', 'Subtotal:']
         # invalid description | stops iterating the loop
         description_blacklist = ['Total in USD (Tax not included)', 'Proposal Summary', 'Hardware Summary', 'Software Summary', 'Services Summary', 'Prepaid SW Maintenance Summary', 'Total Products and Services (USD)', 'Total Price (USD)']
         # list of text that needs to be filtered out but doesn't stop iterating the loop
@@ -796,6 +800,7 @@ def remove_watermark(wm_text, inputFile, outputFile):
 # csv_avt('06062019-WWT-Hawaii Medical Service Association[1].xls', 'quotes/06062019-WWT-Hawaii Medical Service Association[1].xls', "test", "test")
 # csv_avt('PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', 'quotes/PaloAlto_PAN_Hawaiian Airlines_0020706101.xls', "test", "test")
 # csv_avt('PAN_Brigham Young University-Hawaii_0020724391.xls', 'quotes/PAN_Brigham Young University-Hawaii_0020724391.xls', "test", "test")
+# csv_avt('AV11-74259-00 08-29-19.xlsx', 'quotes/AV11-74259-00 08-29-19.xlsx', "test", "test")
 # csv_avt('QUO-1953529-L6W1V2-1.xlsx', 'quotes/QUO-1953529-L6W1V2-1.xlsx', "test", "test")
 # csv_avt('QUO-2621751-L9R4M7-0.xlsx', 'quotes/QUO-2621751-L9R4M7-0.xlsx', "test", "test")
 # csv_avt('QUO-2738183-V3M3C4-1.xlsx', 'quotes/QUO-2738183-V3M3C4-1.xlsx', "test", "test")
